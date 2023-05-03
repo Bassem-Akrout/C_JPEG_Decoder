@@ -18,3 +18,36 @@ Rajouter **régulièrement** des informations sur l'avancement de votre projet e
 - Problème relationnel au sein du groupe ? Contactez [Pascal](https://fr.wikipedia.org/wiki/Pascal,_le_grand_fr%C3%A8re) !
 - Besoin de prendre l'air ? Le [Mont Rachais](https://fr.wikipedia.org/wiki/Mont_Rachais) est accessible à pieds depuis la salle E301 !
 - Un peu juste sur le projet à quelques heures de la deadline ? Le [Montrachet](https://www.vinatis.com/achat-vin-puligny-montrachet) peut faire passer l'envie à vos profs de vous mettre une tôle !
+
+- **OUR PROJECT**
+    # 1ST STEP OF THE PROJECT: MODULES AND SPECIFICATIONS
+        -MODE BASELINE:
+            * PROGRAM ENTRY: IMAGE FILE JPEG  -> OUT FILE: PPM IMAGE OR PGM IMAGE
+                -executable has the name "jpeg2ppm"
+            
+            file structure
+            
+                jpeg_reader.c
+                    * JPEG head extraction:
+                    -image size extraction (SOF)  -> height x width
+                    -sampling factor extraction (SOF)  -> in [1..4] 
+                    -components number N (SOF) -> N between 1 and 3
+                    -quantification table extraction (DQT) -> precision , i_Q , table values
+                    -Huffman tables (DHT) -> symbols number by length ( 1 to 16 bits ) and symbols		
+                decoded_image_creator.c
+                    *create_image_ppm or pgm:
+                        -specify image_name and type (.ppm or .pgm (color))
+                treatment.c
+                    submodul:
+                        -Huffman.c
+                        -MCU_decoder.c
+                        -toRGB.c
+                        -idct.c
+                        -zigzag_quantification.c
+                main.c
+                    -read image ".jpeg" ou ".jpg"
+                    -call jpeg_reader
+                        ...treatment...
+                    -close image
+                    -call create_image_ppm
+                    

@@ -1,0 +1,7 @@
+#ifndef _DECODE_IMAGE_CREATOR_H_
+#define _DECODE_IMAGE_CREATOR_H_
+
+
+/*FONCTIONS*/
+
+#endif /*_DECODE_IMAGE_CREATOR_H_*/
