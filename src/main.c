@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 
 void hexbump(char* file){
-    
+    /*This function will create a "jpeg_ascii.txt" file in our /src directory*/
+
+
     /* Open the file and the hexbumped file <3 */
     FILE* jpeg_image= fopen(file,"r");
     FILE* jpeg_ascii= fopen("jpeg_ascii.txt","w");
@@ -50,7 +51,8 @@ int main(int argc,char** argv){
     }
 
     /*Convert image file to hexBump file in order to extract header*/
-    hexbump(argv[1]);
+    hexbump(argv[1]); /*This will create a "jpeg_ascii.txt" file that contains the hexbumped version*/
+
     
 
 
