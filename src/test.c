@@ -5,15 +5,28 @@
 #include <stddef.h>
 #include <unistd.h>
 
+
+
+struct HEADER{
+    struct APP0* app0;
+    struct SOF* sof;
+    struct SOS* sos;
+    struct DQT* dqt_lista[4];
+    struct DHT* dht_lista[4];
+    uint8_t* dqt_countra;
+    uint8_t* dht_countra;
+
+};
+
+
+
 struct APP0 {
     unsigned char* image_type;
     uint16_t section_length;
 
 };
 
-struct DQTs {
-    struct DQT* all_dqt;
-};
+
 
 struct DQT {
     uint16_t section_length;
@@ -34,9 +47,6 @@ struct SOF {
 
 };
 
-struct DHTs {
-    struct DHT* all_dht;
-};
 
 struct DHT{
     uint16_t section_length;
@@ -333,13 +343,13 @@ struct SOS* EXTRACT_SOS(FILE* file){
     /*INITIALIZE SOS STRUCTURE*/
     struct SOS* sos= malloc(sizeof(struct SOS));
     sos->section_length=(uint16_t) strtoul(length,NULL,16);
-    printf("LENGTH: %u\n",sos->section_length);
+    /*printf("LENGTH: %u\n",sos->section_length);*/
 
     /*INITIALIZE COMPONENT NUMBER*/
     unsigned char* compnumber=calloc(2,sizeof(unsigned char));
     fread(compnumber,sizeof(char),2,file);
     sos->components_number=(uint8_t) strtoul(compnumber,NULL,16);
-    printf("N=: %u\n",sos->components_number);
+    /*printf("N=: %u\n",sos->components_number);*/
     /*INITIALIZE I_C , I_H_AC, I_H_DC */
     sos->i_c=malloc(sos->components_number*sizeof(uint8_t));
     sos->i_h_AC=malloc(sos ->components_number*sizeof(uint8_t));
@@ -348,14 +358,14 @@ struct SOS* EXTRACT_SOS(FILE* file){
         unsigned char* ic_loc=calloc(2,sizeof(unsigned char));
         fread(ic_loc,sizeof(unsigned char),2,file);
         (sos ->i_c)[i]=(uint8_t) strtoul(ic_loc,NULL,16);
-        printf("i_c: %u\n",(sos ->i_c)[i]);
+        /*printf("i_c: %u\n",(sos ->i_c)[i]);*/
         unsigned char* i_h_loc=calloc(1,sizeof(unsigned char));
         fread(i_h_loc,sizeof(unsigned char),1,file);
         (sos ->i_h_DC)[i]=(uint8_t) strtoul(i_h_loc,NULL,16);
-        printf("DC: %u\n",(sos->i_h_DC)[i]);
+        /*printf("DC: %u\n",(sos->i_h_DC)[i]);*/
         fread(i_h_loc,sizeof(unsigned char),1,file);
         (sos->i_h_AC)[i]=(uint8_t) strtoul(i_h_loc,NULL,16);
-        printf("AC: %u\n",(sos ->i_h_AC)[i]);
+        /*printf("AC: %u\n",(sos ->i_h_AC)[i]);*/
         free(i_h_loc);
         free(ic_loc);
     }
@@ -364,7 +374,7 @@ struct SOS* EXTRACT_SOS(FILE* file){
     fseek(file,pos+6,SEEK_SET);
 }
 
-void extract_header(void){
+void extract_header(struct HEADER* header){
     
     FILE* image=fopen("jpeg_ascii.txt","r");
     unsigned char caracters[2];
@@ -373,10 +383,10 @@ void extract_header(void){
     struct DHT* dht;
     struct SOF* sof;
     struct SOS* sos;
-    int dqt_counter=0;
-    int dht_counter=0;
-    struct DQT* dqt_list[4];
-    struct DHT* dht_list[4];
+    uint8_t dqt_counter=0;
+    header->dqt_countra=&dqt_counter;
+    uint8_t dht_counter=0;
+    header->dht_countra=&dht_counter;
     while (fread(caracters,sizeof(unsigned char),2,image)==2){ /*READ 2 BY 2 BYTES IN THE .TXT FILE*/
         if (strcmp(caracters,"FF")==0){ /* IF WE HAVE A BEGINNING OF A MARKER*/
             fread(caracters,sizeof(unsigned char),2,image); /* ADVANCE BY 2 BYTES*/
@@ -385,7 +395,8 @@ void extract_header(void){
                 }
             
             if (strcmp(caracters,"E0")==0){ /* ELSE IF MARKER APP0, CALL EXTRACT_APP0 */
-                app0=EXTRACT_APP0(image); /*CALL EXTRACT_APP0 FUNCTION AND RETURN THE APP0 STRUCTURE */
+                app0=EXTRACT_APP0(image); 
+                header->app0=app0;          /*CALL EXTRACT_APP0 FUNCTION AND RETURN THE APP0 STRUCTURE */
                 /*printf("IMAGE TYPE: %s\n",app0->image_type);    
                 printf("APP0 LENGTH: %u\n",app0->section_length);*/
                 int position=ftell(image); /*TAKE THE CURRENT POSITION */
@@ -397,7 +408,7 @@ void extract_header(void){
             }
 
             if (strcmp(caracters,"DB")==0){
-            dqt_list[dqt_counter]=EXTRACT_DQT(image);
+            header->dqt_lista[dqt_counter]=EXTRACT_DQT(image);
             /*printf("DQT IQ: %u\n",dqt->i_q);
             printf("LENGTH DQT: %u\n",dqt->section_length);*/
             /*for (int i=0;i<128;i++){
@@ -406,6 +417,8 @@ void extract_header(void){
             }*/
             /*printf("dqt_counter: %d qt: %s \n",dqt_counter,dqt_list[dqt_counter]->quantification_values);*/
             dqt_counter+=1;
+            header->dqt_countra=&dqt_counter;
+            
             }
             
                
@@ -419,13 +432,14 @@ void extract_header(void){
                     printf("%c\n",sof->sampling_vertical[i]);
                     printf("%c\n",sof->quantification_table_i_q[i]);
                 }*/
+                header->sof=sof;
                 
             }
 
             if (strcmp(caracters,"C4")==0){
-            dht_list[dht_counter]=EXTRACT_DHT(image);
+            header->dht_lista[dht_counter]=EXTRACT_DHT(image);
 
-            printf("dht_counter: %d NUMBERS: ",dht_counter);
+            /*printf("dht_counter: %d NUMBERS: ",dht_counter);
             for (int i=0;i<16;i++){
             printf("%u ",dht_list[dht_counter]->symbols_number[i]);
             } 
@@ -434,8 +448,10 @@ void extract_header(void){
             for (int i=0;i<2*(dht_list[dht_counter]->section_length-19);i++){
             printf("%c ",dht_list[dht_counter]->symbols[i]);
             }
-            printf("\n");
+            printf("\n");*/
             dht_counter+=1;
+            header->dht_countra=&dht_counter;
+            printf("dht evolutif %i \n",*(header->dht_countra));
             
             }
             
@@ -448,6 +464,7 @@ void extract_header(void){
                     printf("I_H_DC: %u\n",sos->i_h_DC[i]);
                     
                 }*/
+                header->sos=sos;
                 FILE* bitstream=fopen("bitstream.txt","wb");
                 unsigned char byte_to_read[1];
                 /*  Print bitstream two bytes after the others  */
@@ -459,6 +476,7 @@ void extract_header(void){
                 fseek(bitstream,-16,SEEK_END);
                 ftruncate(fileno(bitstream),ftell(bitstream));
                 fclose(bitstream);
+            printf("dht evolutif %i \n",*(header->dht_countra));
 
 
             }
@@ -469,6 +487,7 @@ void extract_header(void){
         }
     }
     fclose(image);
+    
 }
 
 
@@ -522,8 +541,18 @@ int main(int argc,char** argv){
 
     /*Convert image file to hexBump file in order to extract header*/
     hexbump(argv[1]); /*This will create a "jpeg_ascii.txt" file that contains the hexbumped version*/
-    extract_header();
+    struct HEADER* header=calloc(1,sizeof(struct HEADER));
+    extract_header(header);
+    
+    printf("%s\n",header->app0->image_type);
+    printf("%u\n",header->sof->components_number);
 
+    printf("teset main\n");
+   
+    printf("dht non evolutif %i \n",*(header->dht_countra));
+
+    printf("qt: %s\n",header->dqt_lista[*(header->dqt_countra)]->quantification_values);
+    printf("\n");
     
 
 
