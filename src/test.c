@@ -9,12 +9,50 @@ struct APP0 {
 
 };
 
+struct DQTs {
+    struct DQT* all_dqt;
+};
+
 struct DQT {
     uint16_t section_length;
     uint8_t i_q;
     unsigned char quantification_values[64];
 
 };
+
+struct SOF {
+    uint16_t section_length;
+    uint16_t height;
+    uint16_t width;
+    uint8_t components_number;
+    uint8_t* i_c;
+    uint8_t* sampling_horizontal;
+    uint8_t* sampling_vertical;
+    uint8_t* quantification_table_i_q;
+
+};
+
+struct DHTs {
+    struct DHT* all_dht;
+};
+
+struct DHT{
+    uint16_t section_length;
+    unsigned char huffman_information[2];
+    uint8_t symbols_number[16];
+    unsigned char* symbols;
+
+};
+
+struct SOS{
+    uint16_t section_length;
+    uint8_t components_number;
+    uint64_t* i_c;
+    uint32_t* i_h_DC;
+    uint32_t* i_h_AC;
+
+};
+
 
 
 
@@ -24,7 +62,7 @@ char* convert_hex_to_str(char* string){
     char* string_ascii = (char*)malloc((len_string/2) + 1);
 
     /* Convert 2 by 2 (byte by byte) into ascii caracter*/
-    for (int i = 0; i < len_string; i += 2) {
+    for (int i = 0; i < len_string; i += 2){
         char str_pair[3] = { string[i], string[i+1], '\0' };
         uint8_t ascii_value = strtoul(str_pair, NULL, 16);
         string_ascii[i/2] = (char)ascii_value;
@@ -85,24 +123,24 @@ struct DQT* EXTRACT_DQT(FILE* file){
     /*INITIALIZE DQT STRUCTURE*/
     struct DQT* dqt=malloc(sizeof(struct DQT));
     dqt->section_length=(uint16_t) strtoul(length,NULL,16);
+    /*printf("%u\n",dqt->section_length);*/
     
     /*INITIALIZE QUANTIFICATION INDEX*/
     unsigned char* i_q;
     fread(i_q,sizeof(unsigned char),1,file);
     fread(i_q,sizeof(unsigned char),1,file);
-    dqt->i_q=(uint8_t) strtoul(i_q,NULL,8);
+    dqt->i_q=(uint8_t) strtoul(i_q,NULL,16);
     
     /*INITIALIZE DQT QUATIFICATION TABLE */
-    unsigned char* dqt_table=calloc(64,sizeof(unsigned char));
     int pos=ftell(file);
-    printf("%i",pos);
-    for (int i=pos;i<pos+(dqt->section_length)-6;i++){
-        unsigned char byte[1];
-        fread(byte,sizeof(unsigned char),1,file);
-        printf("%c",*byte);
-        dqt_table[i-pos]=*byte;
+    /*printf("%i\n",pos);*/
+    int index_tab=0;
+    for (int i=pos;i<=pos+(dqt->section_length);i++){
+        fread(&(dqt->quantification_values)[index_tab],sizeof(unsigned char),1,file);
+        /*printf("%c",dqt->quantification_values[index_tab]);*/
+        index_tab+=1;
     }
-    memcpy(dqt->quantification_values, dqt_table, 64);
+    
     /*RETURN DQT STRUCTURE*/
     return dqt;
     
@@ -110,9 +148,110 @@ struct DQT* EXTRACT_DQT(FILE* file){
 
 
 
+struct SOF* EXTRACT_SOF(FILE* file){
+    unsigned char* length=malloc(4*sizeof(unsigned char));
+    memset(length,0,4);
+    /*TAKES THE FIRST TWO BYTES*/
+    fread(length,sizeof(unsigned char),4,file);
+    
+    /*INITIALIZE SOF STRUCTURE*/
+    struct SOF* sof= malloc(sizeof(struct SOF));
+    sof->section_length=(uint16_t) strtoul(length,NULL,16);
+    free(length);
+    /*printf("%u\n",sof->section_length);*/
+    unsigned char* ignore=malloc(2*sizeof(unsigned char));
+    memset(ignore,0,2);
+    fread(ignore,sizeof(unsigned char),2,file);
+    free(ignore);
+   /*INITIALIZE HEIGHT*/
+    unsigned char* height=malloc(4*sizeof(unsigned char));
+    memset(height,0,4);
+    fread(height,sizeof(unsigned char),4,file);
+    sof->height=(uint16_t) strtoul(height,NULL,16);
+    free(height);
+    /*printf("%u\n",sof->height);*/
+
+    /*INITIALIZE WIDTH*/
+    unsigned char* width=malloc(4*sizeof(unsigned char));
+    memset(width,0,4);
+    fread(width,sizeof(unsigned char),4,file);
+    sof->width=(uint16_t) strtoul(width,NULL,16);
+    free(width);
+    /*printf("%u\n",sof->width);*/
+
+    /*INITIALIZE COMPONENTS NUMBER*/
+    unsigned char compnumber[2];
+    memset(compnumber,0,2);
+    fread(compnumber,sizeof(char),2,file);
+    sof->components_number=(uint8_t) strtoul(compnumber,NULL,16);
+    /*printf("%u\n",sof->components_number);*/
+    
+    /*INITIALIZE I_C*/
+    sof->i_c=malloc(sof->components_number*sizeof(uint8_t));
+    sof->sampling_horizontal=malloc(sof->components_number*sizeof(uint8_t));
+    sof->sampling_vertical=malloc(sof->components_number*sizeof(uint8_t));
+    sof->quantification_table_i_q=malloc(sof->components_number*sizeof(uint8_t));
+    for (int i=0;i<sof->components_number;i++){
+        fread(&(sof->i_c)[i],sizeof(uint8_t),2,file);
+        fread(&(sof->sampling_horizontal)[i],sizeof(uint8_t),1,file);
+        fread(&(sof->sampling_vertical)[i],sizeof(uint8_t),1,file);
+        fread(&(sof->quantification_table_i_q)[i],sizeof(uint8_t),2,file);
+
+
+    }
+    
+    return sof;
+}
+
+
+
+struct DHT* EXTRACT_DHT(FILE* file){
+    unsigned char length[4];
+    /*TAKES THE FIRST TWO BYTES*/
+    fread(length,sizeof(unsigned char),4,file);
+    
+    /*INITIALIZE DHT STRUCTURE*/
+    struct DHT* dht= malloc(sizeof(struct DHT));
+    dht->section_length=(uint16_t) strtoul(length,NULL,16);
+    printf("%u\n",dht->section_length);
+
+    /*INITIALIZE HUFFMAN INFORMATION*/
+    fread(&(dht->huffman_information)[0],sizeof(unsigned char),1,file);
+    fread(&(dht->huffman_information)[1],sizeof(unsigned char),1,file); 
+    /*printf("%c\n",dht->huffman_information[0]);
+    /*printf("%c\n",dht->huffman_information[1]);
+
+    /*INITIALIZE SYMBOLS NUMBER*/
+    for (int i=0;i<32;i+=2){
+        unsigned char* number_str=malloc(2*sizeof(unsigned char));
+        fread(number_str,sizeof(unsigned char),2,file);
+        /*printf("%s\n",number_str);*/
+        dht->symbols_number[i/2]= (uint8_t) strtoul(number_str,NULL,16);
+        free(number_str);
+        /*printf("%u\n",dht->symbols_number[i/2]);
+    }
+
+    /*INITIALIZE SYMBOLS*/
+    uint8_t length_symbols_table=dht->section_length-19;
+    printf("%u",length_symbols_table);
+    dht->symbols=malloc(length_symbols_table*sizeof(unsigned char));
+    for (int i=0;i<length_symbols_table;i++) {
+        fread(&(dht->symbols)[i],sizeof(unsigned char),2,file);
+        printf("%c\n",dht->symbols[i]); 
+        
+    }
+
+    return dht;
+}
+
+
+
 void extract_header(void){
+    
     FILE* image=fopen("jpeg_ascii.txt","r");
     unsigned char caracters[2];
+    struct DHTs* dhts=malloc(sizeof(struct DHT));
+    struct DQTs* dqts=malloc(sizeof(struct DQT));
     while (fread(caracters,sizeof(unsigned char),2,image)==2){ /*READ 2 BY 2 BYTES IN THE .TXT FILE*/
         if (strcmp(caracters,"FF")==0){ /* IF WE HAVE A BEGINNING OF A MARKER*/
             fread(caracters,sizeof(unsigned char),2,image); /* ADVANCE BY 2 BYTES*/
@@ -131,13 +270,33 @@ void extract_header(void){
                 
                 
             }
+
             if (strcmp(caracters,"DB")==0){
                 struct DQT* dqt=EXTRACT_DQT(image);
-                /*printf("%u\n",dqt->i_q);*/
+                /*printf("%u\n",dqt->i_q);
+                printf("%u\n",dqt->section_length);
+                for (int i=0;i<64;i++){
+                    printf("%c",dqt->quantification_values[i]);
+                }*/
+            }
                
 
+            
+            if (strcmp(caracters,"C0")==0){
+                struct SOF* sof=EXTRACT_SOF(image);
+                /*for (int i=0;i<sof->components_number;i++){
+                    printf("%c\n",sof->i_c[i]);
+                    printf("%c\n",sof->sampling_horizontal[i]);
+                    printf("%c\n",sof->sampling_vertical[i]);
+                    printf("%c\n",sof->quantification_table_i_q[i]);
+                }*/
+                
             }
-        
+
+            if (strcmp(caracters,"C4")==0){
+                struct DHT* dht=EXTRACT_DHT(image);
+                
+            }
         
             
             
@@ -146,7 +305,6 @@ void extract_header(void){
         }
     }
     fclose(image);
-
 }
 
 
@@ -199,7 +357,6 @@ int main(int argc,char** argv){
 
     /*Convert image file to hexBump file in order to extract header*/
     hexbump(argv[1]); /*This will create a "jpeg_ascii.txt" file that contains the hexbumped version*/
-
     extract_header();
 
     
