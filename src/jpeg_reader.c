@@ -11,7 +11,7 @@ WE NEED FOR DECODING*/
 
 
 struct APP0 {
-    char image_type[5];
+    unsigned char* image_type;
     uint16_t section_length;
 
 };
@@ -19,7 +19,7 @@ struct APP0 {
 struct DQT {
     uint16_t section_length;
     uint8_t i_q;
-    char* quantification_values;
+    unsigned char quantification_values[64];
 
 };
 
@@ -52,7 +52,27 @@ struct SOS{
 
 };
 
-struct APP0* extract_app0(FILE* file){
+
+
+char* convert_hex_to_str(char* string){
+    /* THIS FUNCTION CONVERTS A HEXADECIMAL STRING TO ASCCI_STRING*/
+    int len_string = strlen(string);
+    char* string_ascii = (char*)malloc((len_string/2) + 1);
+
+    /* Convert 2 by 2 (byte by byte) into ascii caracter*/
+    for (int i = 0; i < len_string; i += 2) {
+        char str_pair[3] = { string[i], string[i+1], '\0' };
+        uint8_t ascii_value = strtoul(str_pair, NULL, 16);
+        string_ascii[i/2] = (char)ascii_value;
+    }
+    string_ascii[len_string/2] = '\0';
+
+
+    return string_ascii;
+}
+
+
+struct APP0* EXTRACTAPP0(FILE* file){
     /*EXTRACTS THE APP0 SECTION FROM THE FILE*/
     unsigned char length[4];
     /*TAKES THE FIRST TWO BYTES*/
@@ -82,6 +102,58 @@ struct APP0* extract_app0(FILE* file){
 }
 
 
+struct DQT* EXTRACT_DQT(FILE* file){
+    
+    /*EXTRACTS THE DQT SECTION FROM THE FILE*/
+    unsigned char length[4];
+    
+    /*TAKES THE FIRST TWO BYTES*/
+    fread(length,sizeof(unsigned char),4,file);
+    
+    /*INITIALIZE DQT STRUCTURE*/
+    struct DQT* dqt=malloc(sizeof(struct DQT));
+    dqt->section_length=(uint16_t) strtoul(length,NULL,16);
+    /*printf("%u\n",dqt->section_length);*/
+    
+    /*INITIALIZE QUANTIFICATION INDEX*/
+    unsigned char* i_q;
+    fread(i_q,sizeof(unsigned char),1,file);
+    fread(i_q,sizeof(unsigned char),1,file);
+    dqt->i_q=(uint8_t) strtoul(i_q,NULL,8);
+    
+    /*INITIALIZE DQT QUATIFICATION TABLE */
+    /*unsigned char* dqt_table=calloc(64,sizeof(unsigned char));
+    */int pos=ftell(file);
+    /*printf("%i\n",pos);*/
+    int index_tab=0;
+    for (int i=pos;i<=pos+(dqt->section_length);i++){
+        fread(&(dqt->quantification_values)[index_tab],sizeof(unsigned char),1,file);
+        /*printf("%c",dqt->quantification_values[index_tab]);*/
+        index_tab+=1;
+    
+    }
+    
+
+    /*memcpy(dqt->quantification_values, dqt_table, 32);*/
+    /*RETURN DQT STRUCTURE*/
+    return dqt;
+    
+}
+
+
+struct SOF* EXTRACT_SOF(FILE* file){
+    unsigned char length[4];
+    /*TAKES THE FIRST TWO BYTES*/
+    fread(length,sizeof(unsigned char),4,file);
+    
+    /*INITIALIZE DQT STRUCTURE*/
+    struct SOF* sof=malloc(sizeof(struct SOF));
+    sof->section_length=(uint16_t) strtoul(length,NULL,16);
+    printf("%u",sof->section_length);
+
+    return sof;
+}
+
 void extract_header(void){
     FILE* image=fopen("jpeg_ascii.txt","r");
     unsigned char caracters[3];
@@ -92,8 +164,21 @@ void extract_header(void){
                 continue;}
             
             if (strcmp(caracters,"E0")==0){
-                struct APP0 app0=extract_app0(image);
+                struct APP0* app0=EXTRACTAPP0(image);
+                int position=ftell(image); /*TAKE THE CURRENT POSITION */
+                fseek(image,position+(app0->section_length*2)-14,SEEK_SET); /*ADVANCE INTO THE NEXT FF*/
+                
+            }
+
+            if (strcmp(caracters,"DB")==0){
+                struct DQT* dqt=EXTRACT_DQT(image);
             } 
+
+            if (strcmp(caracters,"C0")==0){
+                struct SOF* sof=EXTRACT_SOF(image);
+            }
+
+
         
             
             
