@@ -6,11 +6,22 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h> /* for the function ntohs() */
+
+
 struct HEADER{
     struct APP0* app0;
     struct SOF* sof;
     struct SOS* sos;
-    struct DQT* dqt;
+    struct DQTs* dqts;
+    struct DHT* dht;
+};
+
+struct DQTs{
+    struct DQT** dqt_table;
+    int dqt_counter;
+};
+
+struct DHTs{
     struct DHT* dht;
 };
 
@@ -23,7 +34,6 @@ struct DQT {
     uint16_t section_length;
     uint8_t i_q;
     uint8_t* quantification_values;
-    struct DQT *next;
 };
 
 struct SOF {
@@ -35,7 +45,6 @@ struct SOF {
     uint8_t* sampling_horizontal;
     uint8_t* sampling_vertical;
     uint8_t* quantification_table_i_q;
-    struct SOF *next;
 };
 
 struct DHT{
@@ -92,7 +101,7 @@ struct DQT* EXTRACT_DQT(FILE* file){
     return dqt;
 }
 struct SOF* EXTRACT_SOF(FILE* file){
-    printf("DQT info: \n");
+    printf("SOF info: \n");
     /*INITIALIZE SOF STRUCTURE*/
     struct SOF* sof= malloc(sizeof(struct SOF));
     /*INITIALIZE SECTION LENGTH*/
@@ -194,32 +203,38 @@ struct SOS* EXTRACT_SOS(FILE* file){
 
 void extract_header(struct HEADER* header,FILE* file){
     uint8_t octets;
-    uint8_t liste_dqt=calloc(4,sizeof(struct DQT));
-    uint8_t i=0;
+    header->dqts=calloc(1,sizeof(struct DQTs));
+    header->dqts->dqt_table=calloc(4,sizeof(struct DQT* ));
+    header->dqts->dqt_counter=0;
     while(fread(&octets,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTES*/
         if (octets==0xff){ /* IF WE HAVE A BEGINNING OF A MARKER FF*/
             fread(&octets,sizeof(uint8_t),1,file); /* ADVANCE BY 1 BYTES*/
             switch (octets) {
                 case 0xd8: /* IF MARKER IS SOI D8, CONTINUE */
+                    printf("PASSAGE d8:\n");
                     continue;
                 case 0xe0:
-                    liste_dqt[i]=EXTRACT_APP0(file);
+                    printf("PASSAGE e0:\n");
+                    header->app0=EXTRACT_APP0(file);
                     break;
                 case 0xdb:
-                    liste_dqt[i]=EXTRACT_APP0(file);
-                    i++;
+                    printf("PASSAGE: db\n");
+                    header->dqts->dqt_table[header->dqts->dqt_counter++]=EXTRACT_DQT(file);
                     break;
                 case 0xc0:
+                    printf("PASSAGE: c0\n");
                     header->sof=EXTRACT_SOF(file);
                     break;
                 case 0xc4:
+                    printf("PASSAGE:c4 \n");
                     header->dht=EXTRACT_DHT(file);
                     break;
                 case 0xda:
+                    printf("PASSAGE:da \n");
                     header->sos=EXTRACT_SOS(file);
                     break;
             }
-            header->dqt=&liste_dqt[0];
+            
         }
     }
 }
@@ -246,10 +261,12 @@ int main(int argc,char** argv){
     FILE *jpeg_image= fopen(argv[1],"r");
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
     extract_header(header,jpeg_image);
+    printf("section length:  %u ",(header->dqts->dqt_table[1])->i_q);
+    printf("DQT COUNTER: %i",header->dqts->dqt_counter);
     /*printf("q_i:%u",(header->sof->quantification_table_i_q)[0]);*/
     fclose(jpeg_image);
     free(header->app0->image_type);
-    free(header->dqt->quantification_values);
+    free(header->dqts->dqt_table);
     free(header->sof->i_c);
     free(header->sof->quantification_table_i_q);
     free(header->sof->sampling_horizontal);
