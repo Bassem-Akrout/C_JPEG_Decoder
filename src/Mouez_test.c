@@ -194,27 +194,32 @@ struct SOS* EXTRACT_SOS(FILE* file){
 
 void extract_header(struct HEADER* header,FILE* file){
     uint8_t octets;
-    while (fread(&octets,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTES*/
+    uint8_t liste_dqt=calloc(4,sizeof(struct DQT));
+    uint8_t i=0;
+    while(fread(&octets,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTES*/
         if (octets==0xff){ /* IF WE HAVE A BEGINNING OF A MARKER FF*/
             fread(&octets,sizeof(uint8_t),1,file); /* ADVANCE BY 1 BYTES*/
-            if (octets==0xd8){ /* IF MARKER IS SOI D8, CONTINUE */
-                continue;
-                }
-            if (octets==0xe0){
-                header->app0=EXTRACT_APP0(file); 
+            switch (octets) {
+                case 0xd8: /* IF MARKER IS SOI D8, CONTINUE */
+                    continue;
+                case 0xe0:
+                    liste_dqt[i]=EXTRACT_APP0(file);
+                    break;
+                case 0xdb:
+                    liste_dqt[i]=EXTRACT_APP0(file);
+                    i++;
+                    break;
+                case 0xc0:
+                    header->sof=EXTRACT_SOF(file);
+                    break;
+                case 0xc4:
+                    header->dht=EXTRACT_DHT(file);
+                    break;
+                case 0xda:
+                    header->sos=EXTRACT_SOS(file);
+                    break;
             }
-            if (octets==0xdb){
-                header->dqt=EXTRACT_DQT(file);
-            }
-            if (octets==0xc0){
-                header->sof=EXTRACT_SOF(file);
-            }
-            if (octets==0xc4){
-                header->dht=EXTRACT_DHT(file);
-            }
-            if (octets==0xda){
-                header->sos=EXTRACT_SOS(file);
-            }
+            header->dqt=&liste_dqt[0];
         }
     }
 }
