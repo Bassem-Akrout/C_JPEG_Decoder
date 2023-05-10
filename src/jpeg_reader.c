@@ -120,6 +120,8 @@ struct SOS* EXTRACT_SOS(FILE* file){
         sos->i_h_AC[i]=(sos->i_h_DC[i])%16;
         sos->i_h_DC[i]=(sos->i_h_DC[i])/16;
     }
+    int pos=ftell(file);
+    fseek(file,pos+3,SEEK_SET);
     return sos;
 }
 
@@ -131,9 +133,9 @@ void extract_header(struct HEADER* header,FILE* file){
     header->dhts=calloc(1,sizeof(struct DHTs));
     header->dhts->dht_table=calloc(4,sizeof(struct DHT* ));
     header->dhts->dht_counter=0;
-    while(fread(&Bytes,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTES*/
+    while(fread(&Bytes,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTE*/
         if (Bytes==0xff){ /* IF WE HAVE A BEGINNING OF A MARKER FF*/
-            fread(&Bytes,sizeof(uint8_t),1,file); /* ADVANCE BY 1 BYTES*/
+            fread(&Bytes,sizeof(uint8_t),1,file); /* ADVANCE BY 1 BYTE*/
             switch (Bytes) {
                 case 0xd8: /* IF MARKER IS SOI D8, CONTINUE */
                     continue;
@@ -152,6 +154,9 @@ void extract_header(struct HEADER* header,FILE* file){
                 case 0xda:/* IF MARKER IS DA, EXTRACT SOS */
                     header->sos=EXTRACT_SOS(file);
                     break;
+            }
+            if (Bytes == 0xda) { /* IF MARKER IS DA, EXIT WHILE LOOP */
+                break;
             }
         }
     }

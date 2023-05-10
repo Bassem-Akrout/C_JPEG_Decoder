@@ -26,7 +26,9 @@ int main(int argc,char** argv){
     FILE *jpeg_image= fopen(argv[1],"r");
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
     extract_header(header,jpeg_image);
-    printf("%u\n",header->sof->section_length);
+    uint8_t pos;
+    fread(&pos,sizeof(uint8_t),1,jpeg_image);
+    printf("%i\n",pos);
     fclose(jpeg_image);
     free_header(header);
     return EXIT_SUCCESS;
