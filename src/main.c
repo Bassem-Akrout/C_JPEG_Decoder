@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
+#include <arpa/inet.h>
+#include <netinet/in.h> /* for the function ntohs() */
+#include "jpeg_reader.c"
 int main(int argc,char** argv){
     /* If there is no image.jpeg input : USAGE ERROR*/
     if (argc!=2){
@@ -28,7 +30,13 @@ int main(int argc,char** argv){
     extract_header(header,jpeg_image);
     uint8_t pos;
     fread(&pos,sizeof(uint8_t),1,jpeg_image);
-    printf("%i\n",pos);
+    /*printf(",%d ", header->dhts->dht_table[1]->symbols_number_total);*/
+    /*for (int i = 0; i < 16; i++) {
+    printf(",%d ", header->dhts->dht_table[1]->symbols_number[i]);}*/
+
+    
+    /*for (int i = 0; i < header->dhts->dht_table[1]->symbols_number_total; i++) {
+    printf("path :%s \n", header->dhts->dht_table[1]->paths[i]);}*/
     fclose(jpeg_image);
     free_header(header);
     return EXIT_SUCCESS;

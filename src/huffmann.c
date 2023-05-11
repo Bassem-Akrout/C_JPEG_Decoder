@@ -56,13 +56,17 @@ huffnode* find_free_parent(huffnode* node) {
 }
 
 char** huffmancodes(uint8_t* list_length, huffnode* root, int list_size) {
-    char** list_codes = /*?*/(char**)malloc(list_size * sizeof(char*)); 
+    char** list_codes = (char**)malloc(list_size * sizeof(char*)); 
     for (int i = 0; i < list_size; i++) {
         list_codes[i] = (char*)calloc(17 , sizeof(char));
     }
     int j=0;
-    for (int i = 0; i < list_size; i++) {
-        while (list_length[i] > 0) {
+    uint8_t list_length2[16];
+    for (int i = 0; i < 16; i++){
+        list_length2[i]=list_length[i];
+    }
+    for (int i = 0; i < 16; i++) {     
+        while (list_length2[i] > 0) {
             root = find_free_parent(root);
             while (root->D < i + 1) {
                 if (root->left == NULL) {
@@ -71,36 +75,56 @@ char** huffmancodes(uint8_t* list_length, huffnode* root, int list_size) {
                     root = goright(root, "1");
                 }
             }
-            list_length[i] -= 1;
+            list_length2[i] -= 1;
             strcpy(list_codes[j], root->c);
             j+=1;
             root = root->P;
-            if (list_length[i] > 0) {
+            if (list_length2[i] > 0) {
                 root = goright(root, "1");
-                list_length[i] -= 1;
+                list_length2[i] -= 1;
                 strcpy(list_codes[j], root->c);
                 j+=1;
             }
+        
         }
-    }
+    }   
     return list_codes;
 }
-
-
-int main() {
-    // Example usage
-    uint8_t frequencies[16] = {0, 0, 7, 1,1,1,0,0,0,0,0,0,0,0,0,0};
+/*int main(void){
+    uint8_t frequencies[16] = {0 ,1 ,3 ,3 ,2 ,3 ,5 ,5 ,6 ,5 ,2 ,3 ,4 ,7 ,4 ,11};
     huffnode* root = create_huffnode(NULL, "");
-    char** codes = huffmancodes(frequencies, root,16);
-    
-    // Print the Huffman codes
-    for (int i = 0; i < 10; i++) {
-        printf("Path du symbole num %d: %s \n", i,codes[i]);
-    }
-    for (int i = 0; i < 16; i++){free(codes [i]);}
-    
-    free(codes);
-    return 0;
-    
-    }
+    char** codes = huffmancodes(frequencies, root, 64);
 
+    // Print the Huffman codes
+    for (int j = 0; j < 64; j++){
+        printf("%s\n", codes[j]);
+    } 
+    
+
+    // Free dynamically allocated memory
+    for (int i = 0; i < 64; i++) {
+        free(codes[i]);
+    }
+    free(codes);
+
+    return 0;
+}*/
+/*int main(void){
+    uint8_t frequencies[16] = {0 ,0 ,7 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0,0};
+    huffnode* root = create_huffnode(NULL, "");
+    char** codes = huffmancodes(frequencies, root, 10);
+
+    // Print the Huffman codes
+    for (int j = 0; j < 10; j++){
+        printf("%s\n", codes[j]);
+    } 
+    
+
+    // Free dynamically allocated memory
+    for (int i = 0; i < 10; i++) {
+        free(codes[i]);
+    }
+    free(codes);
+
+    return 0;
+}*/

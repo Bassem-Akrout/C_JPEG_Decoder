@@ -5,7 +5,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <netinet/in.h> /* for the function ntohs() */
-
+#include "huffmann.c"
 struct APP0* EXTRACT_APP0(FILE* file){
     /*INITIALIZE APP0 STRUCTURE*/
     struct APP0* app0 = malloc(sizeof(struct APP0));
@@ -89,16 +89,33 @@ struct DHT* EXTRACT_DHT(FILE* file){
         printf("ERROR HUFFMAN INFORMATION\n");
         exit(EXIT_FAILURE);
     }
+    
     /*INITIALIZE SYMBOLS NUMBER*/
+    dht->symbols_number_total=0;
     for (int i=0;i<16;i+=1){
         fread(&(dht->symbols_number)[i],sizeof(uint8_t),1,file);
+        dht->symbols_number_total+=dht->symbols_number[i];
     }
+
     /*INITIALIZE SYMBOLS*/
     uint8_t length_symbols_table=dht->section_length-19;
     dht->symbols=calloc(length_symbols_table,sizeof(uint8_t));
     for (int i=0;i<length_symbols_table ;i++) {
         fread(&(dht->symbols)[i],sizeof(uint8_t),1,file);
     }
+   
+    /*Set paths*/
+    dht->paths = malloc(dht->symbols_number_total * sizeof(char*)); //FREE à faire
+    for (int i = 0; i < dht->symbols_number_total; i++) {
+        dht->paths[i] = calloc(17 , sizeof(char));//FREE à faire
+    } 
+    huffnode* root = create_huffnode(NULL, "");
+    char** codes = huffmancodes(dht->symbols_number, root, dht->symbols_number_total);
+    for (int j = 0; j < dht->symbols_number_total; j++){
+        strcpy(dht->paths[j],codes[j]);
+    } 
+
+
     return dht;
 }
 
@@ -150,6 +167,7 @@ void extract_header(struct HEADER* header,FILE* file){
                     break;
                 case 0xc4:/* IF MARKER IS C4, EXTRACT ALL DHT */
                     header->dhts->dht_table[header->dhts->dht_counter++]=EXTRACT_DHT(file); 
+                    
                     break;
                 case 0xda:/* IF MARKER IS DA, EXTRACT SOS */
                     header->sos=EXTRACT_SOS(file);
