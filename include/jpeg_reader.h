@@ -70,8 +70,8 @@ struct SOF* extract_sof(FILE* file);
 struct DHT* extract_dht(FILE* file);
 struct SOS* extract_sos(FILE* file);*/
 
-void free_header(struct HEADER* header);
-void extract_header(struct HEADER* header,FILE* file);
+extern void free_header(struct HEADER* header);
+extern void extract_header(struct HEADER* header,FILE* file);
 
 
 
