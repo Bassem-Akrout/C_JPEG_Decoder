@@ -90,8 +90,10 @@ struct DHT* EXTRACT_DHT(FILE* file){
         exit(EXIT_FAILURE);
     }
     /*INITIALIZE SYMBOLS NUMBER*/
+    dht->symbols_number_total=0;
     for (int i=0;i<16;i+=1){
         fread(&(dht->symbols_number)[i],sizeof(uint8_t),1,file);
+        dht->symbols_number_total+=dht->symbols_number[i];
     }
     /*INITIALIZE SYMBOLS*/
     uint8_t length_symbols_table=dht->section_length-19;

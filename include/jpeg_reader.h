@@ -50,6 +50,7 @@ struct DHT{
     unsigned char huffman_information[2];
     uint8_t symbols_number[16];
     unsigned char* symbols;
+    uint8_t symbols_number_total;
 
 };
 
@@ -68,8 +69,8 @@ struct SOF* extract_sof(FILE* file);
 struct DHT* extract_dht(FILE* file);
 struct SOS* extract_sos(FILE* file);*/
 
-void free_header(struct HEADER* header);
-void extract_header(struct HEADER* header,FILE* file);
+extern void free_header(struct HEADER* header);
+extern void extract_header(struct HEADER* header,FILE* file);
 
 
 

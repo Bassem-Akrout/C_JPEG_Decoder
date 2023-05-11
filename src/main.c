@@ -1,8 +1,10 @@
-#include "../include/jpeg_reader.h"
+/*#include "../include/jpeg_reader.h"*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include "jpeg_reader.c"
+
 
 int main(int argc,char** argv){
     /* If there is no image.jpeg input : USAGE ERROR*/
@@ -29,6 +31,15 @@ int main(int argc,char** argv){
     uint8_t pos;
     fread(&pos,sizeof(uint8_t),1,jpeg_image);
     printf("%i\n",pos);
+    unsigned char* bit=calloc(8,sizeof(unsigned char));
+    for (int i=7;i>=0;i--){
+        bit[7-i]=(pos >> i) & 1;
+    }
+    for (int i=0;i<header->dhts->dht_table[0]->symbols_number_total;i++){
+        printf("SYMBOLE : %02x\n ",(header->dhts->dht_table[0]->symbols)[0]);
+    }
+    
+
     fclose(jpeg_image);
     free_header(header);
     return EXIT_SUCCESS;
