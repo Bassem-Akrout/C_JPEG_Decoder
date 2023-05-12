@@ -1,21 +1,130 @@
-#include "huffmann.c"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include "jpeg_reader.c"
+#include <math.h>
 
 
+/* - pour DC: CALCUL MAGNITUDE -> On lit octet coeff DC : 7c : en décimal 124 -> magnitude=7 : code 1111100 et code de huffman : 0 donc codage 01111100
+    pour DC suivant: on encode la difference par rapport à la valeur du DC précédent ( pour la meme composante ) */
+
+
+uint8_t magnitude(int16_t signed_integer){
+    /*THIS FUNCTION RETURNS THE MAGNITUDE OF A SIGNED INTEGER*/
+
+    uint16_t abs_value=abs(signed_integer);
+    
+    uint8_t mag_class=0;
+    while (abs_value>0){
+        abs_value= abs_value>>1; /*RIGHT SHIFTING TO DIVIDE BY 2 */
+        mag_class++;
+    }
+    
+    if (mag_class>11) mag_class==11;
+
+    return mag_class;
+}
+
+char *int_to_binary(int16_t n,uint8_t magnitude) {
+  
+  /*CONVERTS A SIGNED INTEGER TO BINARY AND ONLY TAKES THE "MAGNITUDE" LOW-WEIGHTED BITS*/
+
+  char *binary = (char *) malloc(sizeof(char) * (magnitude+1));
+  int i = 0;
+  unsigned int mask = 1 <<(magnitude-1); 
+  
+  while (mask > 0) {
+    if ((n & mask)== mask) {
+        binary[i]='1'; }
+    else binary[i]='0';
+    i++;
+    mask >>= 1;
+  }
+
+  binary[i] = '\0';
+
+  return binary;
+}
+int16_t* signed_integers_table(uint8_t magnitude){
+    
+    /*THIS TABLE CONTAINS ALL SIGNED INTEGERS WITHIN THE MAGNITUDE INDEX*/
+    int16_t* signed_integers=malloc(pow(2,magnitude)*sizeof(int16_t));
+    
+    /*INITIALIZE NEGATIVE RANGES*/
+    int16_t lower_neg=-(pow(2,magnitude)-1);
+    int16_t higher_neg=lower_neg+(pow(2,magnitude-1)-1);
+    
+    /*INTIALIZE POSITIVE RANGES*/
+    int16_t higher_pos=pow(2,magnitude)-1;
+    int16_t lower_pos=higher_pos-pow(2,magnitude-1)+1;
+    
+    /*FILL THE SIGNED INTEGERS TABLE*/
+    int j=0;
+    for (int16_t i=lower_neg;i<=higher_neg;i++){
+        signed_integers[j]=i;
+        j++;
+        }
+    for (int16_t i=lower_pos;i<=higher_pos;i++){
+        signed_integers[j]=i;
+        j++;
+    }
+    return signed_integers;
+}
+int find_index_signed_integer(int16_t* signed_integers_table,int16_t signed_integer,uint8_t magnitude){
+    int index=0;
+    while (signed_integers_table[index]!=signed_integer){
+        index++;
+    }
+    return index;
+}
+
+
+char** int_to_binary_table(uint8_t magnitude){
+    
+    /* THIS FUNCTION RETURN A TABLE CONTAINING ALL CODES FOR SIGNED INTEGERS WITHIN THE MAGNITUDE INDEX*/
+    
+    /*INITIALIZE THE RETURN TABLE*/
+    char** binary_table=calloc(pow(2,magnitude),sizeof(char *));
+    
+    /*THIS TABLE CONTAINS ALL SIGNED INTEGERS WITHIN THE MAGNITUDE INDEX*/
+    int16_t* signed_integers=signed_integers_table(magnitude);
+    
+    
+    /*FILL THE BINARY TABLE CODES FOR EACH SIGNED INTEGER */
+    for (int i=0;i<pow(2,magnitude);i++){
+        binary_table[i]=int_to_binary(signed_integers[i],magnitude);
+    }
+    return binary_table;
+}
+
+char* find_code(char** binary_table,int16_t signed_integer,uint8_t magnitude){
+    
+    /*FINDS THE CODE RELATED TO THE SIGNED INTEGER IN THE BINARY TABLE*/
+    
+    char* code;
+    int16_t* signed_table=signed_integers_table(magnitude);
+    int index=find_index_signed_integer(signed_table,signed_integer,magnitude);
+    code=binary_table[index];
+    return code;
+
+}
 
 
 unsigned char* bit_extraction(unsigned char buffer){
-    unsigned char* bit=calloc(8,sizeof(int));
+    
+    /*BIT EXTRACTION FROM A BYTE*/
+    unsigned char* bits =calloc(8,sizeof(int));
     for (int i=7;i>=0;i--){
-        bit[7-i]=(buffer >> i) & 1;
+        bits [7-i]=(buffer >> i) & 1;
     }
-    return bit;
+    return bits ;
 } 
 
+
 int* bits_codes_verification_and_position(unsigned char* bits,char** codes){
+    /*VERIFIES IF A HUFFMAN SYMBOL CORRESPONDS WITH THE BYTE*/
+
     int i=0;
     int j=0;
     while (strcmp(&(codes[j][i]),"")!=0){
@@ -34,14 +143,21 @@ int* bits_codes_verification_and_position(unsigned char* bits,char** codes){
     
 }
 
+uint8_t* get_huffman_DC_index(struct SOS* sos){
+    return sos->i_h_AC;
+    }
+
+uint8_t* get_huffman_AC_index(struct SOS* sos){
+    return sos->i_h_AC;
+}
+
+
+
 unsigned char EXTRACT_DC_SYMBOL(FILE* file,uint8_t* list_DC_lengths,struct DHT* dht){
-      
-    huffnode* root=create_huffnode(NULL,"");
-    char** codes=huffmancodes(list_DC_lengths,root,16);
     uint8_t byte;
     fread(&byte,sizeof(uint8_t),1,file);
     unsigned char* bits=bit_extraction(byte);
-    int* position_symbolindex=bits_codes_verification_and_position(bits,codes);
+    int* position_symbolindex=bits_codes_verification_and_position(bits,dht->paths);
     printf("POSITION SYMBOLE: %i\n",position_symbolindex[1]-1);
     unsigned char symbol_DC=dht->symbols[0];
     printf("SYMBOLE: %02x\n",symbol_DC);
@@ -85,7 +201,16 @@ int main(int* argc,char** argv){
     for (int i=7;i>=0;i--){
         bit[7-i]=(pos >> i) & 1;
     }
-    block_bitstream_to_symbols_sequence(0,jpeg_image,header->dhts->dht_table[0]);
+    /*block_bitstream_to_symbols_sequence(0,jpeg_image,header->dhts->dht_table[0]);*/
+    uint8_t mag=magnitude(4);
+    printf("magnitude=: %u\n",mag);
+    char* binary_2=int_to_binary(2,2);
+    char** binary_2_table=int_to_binary_table(mag);
+    for (uint8_t i=0;i<pow(2,mag);i++){
+        printf("TAB: %s\n",binary_2_table[i]);
+    }
+    char* code=find_code(binary_2_table,-3,2);
+    printf("code for 2: %s\n",code);
 
     fclose(jpeg_image);
     free_header(header);
