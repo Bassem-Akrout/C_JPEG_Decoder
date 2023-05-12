@@ -9,6 +9,10 @@
 /* - pour DC: CALCUL MAGNITUDE -> On lit octet coeff DC : 7c : en décimal 124 -> magnitude=7 : code 1111100 et code de huffman : 0 donc codage 01111100
     pour DC suivant: on encode la difference par rapport à la valeur du DC précédent ( pour la meme composante ) */
 
+uint8_t magnitude_char(char* code){
+    return strlen(code);
+}
+
 
 uint8_t magnitude(int16_t signed_integer){
     /*THIS FUNCTION RETURNS THE MAGNITUDE OF A SIGNED INTEGER*/
@@ -72,15 +76,24 @@ int16_t* signed_integers_table(uint8_t magnitude){
     return signed_integers;
 }
 
-
-int find_index_signed_integer(int16_t* signed_integers_table,int16_t signed_integer){
-    /*FINDS THE INDEX OF A SIGNED INTEGER IN THE SIGNED INTEGER TABLE */
+int find_index_code(char** binary_table,char* code,uint8_t magnitude){
     
+    /*FINDS THE INDEX OF THE CODE IN THE BINARY TABLE*/
     int index=0;
-    while (signed_integers_table[index]!=signed_integer){
+    while(strcmp(binary_table[index],code)!=0){
         index++;
     }
     return index;
+
+}
+
+int16_t find_signed_integer_from_code(char** binary_table,int16_t* signed_integers_table,char* code,uint8_t magnitude){
+    /*FINDS THE SIGNED INTEGER IN THE SIGNED INTEGER TABLE FROM THE CORRESPODING*/
+
+    int index=find_index_code(binary_table,code,magnitude);
+    int16_t integer=signed_integers_table[index];
+    if (integer<0) return integer++;
+    else return integer--;
 }
 
 
@@ -100,18 +113,6 @@ char** int_to_binary_table(uint8_t magnitude){
         binary_table[i]=int_to_binary(signed_integers[i],magnitude);
     }
     return binary_table;
-}
-
-char* find_code(char** binary_table,int16_t signed_integer,uint8_t magnitude){
-    
-    /*FINDS THE CODE RELATED TO THE SIGNED INTEGER IN THE BINARY TABLE*/
-    
-    char* code;
-    int16_t* signed_table=signed_integers_table(magnitude);
-    int index=find_index_signed_integer(signed_table,signed_integer);
-    code=binary_table[index];
-    return code;
-
 }
 
 
@@ -135,7 +136,7 @@ int* bits_codes_verification_and_position(unsigned char* bits,unsigned char** co
     while (strcmp(&(codes[j][i]),"")!=0){
             printf("codes[%i][%i]: %c\n",j,i,codes[j][i]);
             printf("bits[%i]: %u\n",i,bits[i]);
-            if (bits[i]!=codes[j][i]){
+            if (bits[i]!=codes[j][i]-'0'){
                 j++;
                 printf("j : %i\n",j);
                 printf("malkach\n");
@@ -174,9 +175,8 @@ unsigned char EXTRACT_DC_SYMBOL(FILE* file,uint8_t* list_DC_lengths,struct HEADE
     }ok*/
 
     int* position_symbolindex=bits_codes_verification_and_position(bits,header->dhts->dht_table[0]->paths,header->dhts->dht_table[0]->symbols_number_total);
-    printf("POSITION SYMBOLE: %i\n",position_symbolindex[1]-1);
-    printf("symbole index: %i\n",position_symbolindex[1]);
-    unsigned char symbol_DC=header->dhts->dht_table[0]->symbols[position_symbolindex[1]-1];
+    printf("POSITION SYMBOLE: %i\n",position_symbolindex[1]);
+    unsigned char symbol_DC=header->dhts->dht_table[0]->symbols[position_symbolindex[1]];
     printf("SYMBOLE: %02x\n",symbol_DC);
     return symbol_DC;
     
@@ -215,22 +215,29 @@ int main(int argc,char** argv){
     /*printf("paths: %s\n",header->dhts->dht_table[0]->paths[0]);*/
     /*unsigned char* bit=calloc(8,sizeof(unsigned char));*/
     /*block_bitstream_to_symbols_sequence(0,jpeg_image,header->dhts->dht_table[0]);*/
-    /*uint8_t mag=magnitude(4);
-    printf("magnitude=: %u\n",mag);
-    char* binary_2=int_to_binary(2,2);
-    char** binary_2_table=int_to_binary_table(mag);
-    for (uint8_t i=0;i<pow(2,mag);i++){
+    /*uint8_t mag=magnitude();*/
+    /*printf("magnitude=: %u\n",mag);*/
+    /*char* binary_2=int_to_binary(2,2);*/
+    /*char** binary_2_table=int_to_binary_table(2);
+    for (uint8_t i=0;i<pow(2,2);i++){
         printf("TAB: %s\n",binary_2_table[i]);
     }
-    char* code=find_code(binary_2_table,-3,2);
+    /*char* code=find_code(binary_2_table,-3,2);
     printf("code for 2: %s\n",code);*/
-    for (int i=0;i<header->dhts->dht_table[0]->symbols_number_total;i++){
+    /*for (int i=0;i<header->dhts->dht_table[0]->symbols_number_total;i++){
         printf("paths[i]: %s \n",header->dhts->dht_table[0]->paths[i]);
-    }
-    unsigned char symbol_DC= EXTRACT_DC_SYMBOL(jpeg_image,header->dhts->dht_table[0]->symbols_number,header);
-    printf("symbole DC: %02x\n",symbol_DC);
+    }*/
+    /*uint8_t magnitude=magnitude_char("1111100");
+    printf("magnitude=: %u\n",magnitude);
+    char** binary_table=int_to_binary_table(magnitude);
+    int16_t* signed_table=signed_integers_table(magnitude);
+    int16_t integer=find_signed_integer_from_code(binary_table,signed_table,"1111100",magnitude);
+    printf("INTEGER: %i\n",integer);*/
+    unsigned char symb_DC=EXTRACT_DC_SYMBOL(jpeg_image,header->dhts->dht_table[0]->symbols_number,header);
+    printf("symb_DC %02x\n",symb_DC);
     fclose(jpeg_image);
     free_header(header);
+
     
     return EXIT_SUCCESS;
 }
