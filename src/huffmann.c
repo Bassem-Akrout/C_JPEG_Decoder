@@ -55,10 +55,10 @@ huffnode* find_free_parent(huffnode* node) {
     return node;
 }
 
-char** huffmancodes(uint8_t* list_length, huffnode* root, int list_size) {
-    char** list_codes = (char**)malloc(list_size * sizeof(char*)); 
+unsigned char** huffmancodes(uint8_t* list_length, huffnode* root, int list_size) {
+    unsigned char** list_codes = (unsigned char**)malloc(list_size * sizeof(unsigned char*)); 
     for (int i = 0; i < list_size; i++) {
-        list_codes[i] = (char*)calloc(17 , sizeof(char));
+        list_codes[i] = (unsigned char*)calloc(17 , sizeof(unsigned char));
     }
     int j=0;
     uint8_t list_length2[16];
@@ -90,6 +90,24 @@ char** huffmancodes(uint8_t* list_length, huffnode* root, int list_size) {
     }   
     return list_codes;
 }
+
+void free_hufftree(huffnode* node) {
+    if (node == NULL) {
+        return;
+    }
+    free_hufftree(node->left);
+    free_hufftree(node->right);
+    free(node);
+}
+
+
+void free_huffmancodes(unsigned char** list_codes, int list_size) {
+    for (int i = 0; i < list_size; i++) {
+        free(list_codes[i]);
+    }
+    free(list_codes);
+}
+
 /*int main(void){
     uint8_t frequencies[16] = {0 ,1 ,3 ,3 ,2 ,3 ,5 ,5 ,6 ,5 ,2 ,3 ,4 ,7 ,4 ,11};
     huffnode* root = create_huffnode(NULL, "");

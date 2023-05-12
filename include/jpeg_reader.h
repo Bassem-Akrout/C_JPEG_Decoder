@@ -50,7 +50,7 @@ struct DHT{
     unsigned char huffman_information[2];
     uint8_t symbols_number[16];
     unsigned char* symbols;
-    char** paths;
+    unsigned char** paths;
     uint8_t symbols_number_total;
 
 };

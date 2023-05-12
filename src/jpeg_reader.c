@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h> /* for the function ntohs() */
 #include "huffmann.c"
+
 struct APP0* EXTRACT_APP0(FILE* file){
     /*INITIALIZE APP0 STRUCTURE*/
     struct APP0* app0 = malloc(sizeof(struct APP0));
@@ -76,12 +77,18 @@ struct SOF* EXTRACT_SOF(FILE* file){
 }
 
 struct DHT* EXTRACT_DHT(FILE* file){
+    
     /*INITIALIZE DHT STRUCTURE*/
+    
     struct DHT* dht= malloc(sizeof(struct DHT));
+    
     /*INITIALIZE SECTION LENGTH*/
+    
     fread(&(dht->section_length), sizeof(uint16_t), 1, file);
     dht->section_length = ntohs(dht->section_length);
+    
     /*INITIALIZE HUFFMAN INFORMATION*/
+    
     fread(&(dht->huffman_information)[0],sizeof(uint8_t),1,file);
     dht->huffman_information[1]=dht->huffman_information[0]%16;
     dht->huffman_information[0]=dht->huffman_information[0]/16;
@@ -91,6 +98,7 @@ struct DHT* EXTRACT_DHT(FILE* file){
     }
     
     /*INITIALIZE SYMBOLS NUMBER*/
+    
     dht->symbols_number_total=0;
     for (int i=0;i<16;i+=1){
         fread(&(dht->symbols_number)[i],sizeof(uint8_t),1,file);
@@ -98,24 +106,28 @@ struct DHT* EXTRACT_DHT(FILE* file){
     }
 
     /*INITIALIZE SYMBOLS*/
+    
     uint8_t length_symbols_table=dht->section_length-19;
     dht->symbols=calloc(length_symbols_table,sizeof(uint8_t));
     for (int i=0;i<length_symbols_table ;i++) {
         fread(&(dht->symbols)[i],sizeof(uint8_t),1,file);
     }
-   
+    
     /*Set paths*/
-    dht->paths = malloc(dht->symbols_number_total * sizeof(char*)); //FREE à faire
+    
+    dht->paths = malloc(dht->symbols_number_total * sizeof(unsigned char*)); //FREE à faire
     for (int i = 0; i < dht->symbols_number_total; i++) {
-        dht->paths[i] = calloc(17 , sizeof(char));//FREE à faire
+        dht->paths[i] = calloc(17 , sizeof(unsigned char));//FREE à faire
     } 
+    
     huffnode* root = create_huffnode(NULL, "");
-    char** codes = huffmancodes(dht->symbols_number, root, dht->symbols_number_total);
+    unsigned char** codes = huffmancodes(dht->symbols_number, root, dht->symbols_number_total);
     for (int j = 0; j < dht->symbols_number_total; j++){
         strcpy(dht->paths[j],codes[j]);
-    } 
-
-
+    }
+    
+    free_huffmancodes(codes, dht->symbols_number_total);
+    free_hufftree(root);
     return dht;
 }
 
@@ -137,10 +149,16 @@ struct SOS* EXTRACT_SOS(FILE* file){
         sos->i_h_AC[i]=(sos->i_h_DC[i])%16;
         sos->i_h_DC[i]=(sos->i_h_DC[i])/16;
     }
+
+    /* ADVANCE TO START OF ENCODED IMAGE TO START DECODING*/
     int pos=ftell(file);
     fseek(file,pos+3,SEEK_SET);
+    
     return sos;
+
 }
+
+
 
 void extract_header(struct HEADER* header,FILE* file){
     uint8_t Bytes;
@@ -151,8 +169,10 @@ void extract_header(struct HEADER* header,FILE* file){
     header->dhts->dht_table=calloc(4,sizeof(struct DHT* ));
     header->dhts->dht_counter=0;
     while(fread(&Bytes,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTE*/
+        printf("BYTE: %02x\n",Bytes);
         if (Bytes==0xff){ /* IF WE HAVE A BEGINNING OF A MARKER FF*/
             fread(&Bytes,sizeof(uint8_t),1,file); /* ADVANCE BY 1 BYTE*/
+            printf("BYTE: %02x\n",Bytes);
             switch (Bytes) {
                 case 0xd8: /* IF MARKER IS SOI D8, CONTINUE */
                     continue;
@@ -180,12 +200,37 @@ void extract_header(struct HEADER* header,FILE* file){
     }
 }
 
+
 void free_header(struct HEADER* header){
+    
+    /* I FEEEL FREEEEEEEEEEEEEEEEEEEE */
+ 
     free(header->app0->image_type);
-    free(header->dqts->dqt_table);
     free(header->sof->i_c);
     free(header->sof->quantification_table_i_q);
     free(header->sof->sampling_horizontal);
     free(header->sof->sampling_vertical);
+    free(header->sof); 
+    for (int i=0;i<header->dqts->dqt_counter;i++){
+    free(header->dqts->dqt_table[i]->quantification_values);
+    free(header->dqts->dqt_table[i]);
+    }
+    for (int i=0;i<header->dhts->dht_counter;i++){
+    free(header->dhts->dht_table[i]->symbols);
+    for (int j = 0; j < header->dhts->dht_table[i]->symbols_number_total; j++) {
+    free(header->dhts->dht_table[i]->paths[j]);
+    }
+    free(header->dhts->dht_table[i]->paths);
+    free(header->dhts->dht_table[i]);
+    }
     free(header->dhts->dht_table);
+    free(header->dqts->dqt_table);
+    free(header->dqts);
+    free(header->dhts);
+    free(header->app0);
+    free(header->sos->i_c);
+    free(header->sos->i_h_AC);
+    free(header->sos->i_h_DC); 
+    free(header->sos);
+ 
 }
