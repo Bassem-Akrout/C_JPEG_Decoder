@@ -92,9 +92,13 @@ int16_t find_signed_integer_from_code(char** binary_table,int16_t* signed_intege
 
     int index=find_index_code(binary_table,code,magnitude);
     int16_t integer=signed_integers_table[index];
-    if (integer<0) return integer++;
-    else return integer--;
+    printf("integer: %i\n",integer);
+    if (integer<0){
+        return integer+1;
+    }
+    return integer;
 }
+
 
 
 char** int_to_binary_table(uint8_t magnitude){
@@ -116,125 +120,58 @@ char** int_to_binary_table(uint8_t magnitude){
 }
 
 
-unsigned char* bit_extraction(unsigned char buffer){
-    
-    /*BIT EXTRACTION FROM A BYTE*/
-    unsigned char* bits =calloc(8,sizeof(int));
-    for (int i=7;i>=0;i--){
-        bits [7-i]=(buffer >> i) & 1;
-    }
-    return bits ;
-} 
+/*FUNCTIONS TO BE DONE : -read through bit stream while nb_elements in the block <64 and add to block  */
 
 
-int* bits_codes_verification_and_position(unsigned char* bits,unsigned char** codes,uint8_t length){
-    
-    /*VERIFIES IF A HUFFMAN SYMBOL CORRESPONDS WITH THE BITSTREAM */
-    printf("length: %u\n ",length);
-    int i=0;
-    int j=0;
-    while (strcmp(&(codes[j][i]),"")!=0){
-            printf("codes[%i][%i]: %c\n",j,i,codes[j][i]);
-            printf("bits[%i]: %u\n",i,bits[i]);
-            if (bits[i]!=codes[j][i]-'0'){
-                j++;
-                printf("j : %i\n",j);
-                printf("malkach\n");
-                if (j>=length) break;
-            }
-                else {
-                i++;
-                printf("lka\n");
-                }
-    }
-    int* i_j=calloc(2,sizeof(int));
-    i_j[0]=i;
-    i_j[1]=j;
-
-    return i_j;
-    
-}
-
-uint8_t* get_huffman_DC_index(struct SOS* sos){
-    return sos->i_h_AC;
-    }
-
-uint8_t* get_huffman_AC_index(struct SOS* sos){
-    return sos->i_h_AC;
-}
-
-/*WORK TO BE DONE HERE: EXTRACT THE SYMBOLS SEQUENCE IN A GIVEN BLOCK */
-
-unsigned char EXTRACT_DC_SYMBOL(FILE* file,uint8_t* list_DC_lengths,struct HEADER* header){
-    uint8_t byte;
-    fread(&byte,sizeof(uint8_t),1,file);
-    printf("byte: %02x\n",byte);
-    unsigned char* bits=bit_extraction(byte);
-    /*for (int i=0;i<8;i++){
-        printf("bit[i]= %u\n",bits[i]);
-    }ok*/
-
-    int* position_symbolindex=bits_codes_verification_and_position(bits,header->dhts->dht_table[0]->paths,header->dhts->dht_table[0]->symbols_number_total);
-    printf("POSITION SYMBOLE: %i\n",position_symbolindex[1]);
-    unsigned char symbol_DC=header->dhts->dht_table[0]->symbols[position_symbolindex[1]];
-    printf("SYMBOLE: %02x\n",symbol_DC);
-    return symbol_DC;
-    
-
-}
-
-
-/*unsigned char* EXTRACT_AC_SYMBOLS(FILE* file,uint8_t* list_AC_lengths,struct DHT* dht){
-    
-    huffnode* root=create_huffnode(NULL,"");
-    char** codes=huffmancodes(list_AC_lengths,root,16);
-    uint8_t byte;
-
-    }
-
-}*/
-
-/*void block_bitstream_to_symbols_sequence(unsigned char type_AC_DC,FILE* file,struct DHT* dht){
-    unsigned char* symbols_sequence=calloc(64,sizeof(unsigned char));
-    if (type_AC_DC==0){
-        /*IF TYPE DHT IS DC 
-        symbols_sequence[0]=EXTRACT_DC_SYMBOL(file,dht->symbols_number,dht);
-        }
-    else if (type_AC_DC==1){
-        /*IF TYPE 
-    }
-
+void add_to_block1_from_bitstream(FILE* file,int16_t* block/*CONTAINS 64 UINT16s* and *huffman_tree*/){
+    /*while index<64
+        read bitstream 1 by 1 and go in huffman tree : 
+            when finds symbol : extracts it and : if bits_forts=0 ; does nothing else stocks nb(pdfaible)*[0] in block  
+                                              magnitude= nb(pdfort)(exmple : 07 : magnitude = 7) 
+                                              stock the (magnitude) next bits after converting them using the fct "find_signed_from_code"
+                                               in the block   */
         
+}                                              
+void add_to_block_i_from_bitstream(FILE* file,int16_t* block,int16_t previous_DC){
+    /*SAME THING BUT FOR DC WE EXTRACT SIGNED INT FROM MAGNITUDE CODE AND ADD IT TO THE PREVIOUS SIGNED DC INTEGER*/
+}
 
-    }*/
+/*WHAT NEEDS TO BE DONE NEXT : WORK ON EVERY COMPONENT (EACH BLOCK IN COMPONENT) AND DO THE SAME THING : ARGUMENTS : INDEX / DHT TABLES FROM HEADER
+                                THEN WORK ON THE WHOLE BITSTREAM AND EXTRACT MCUS(EVERY MCU HAS COMPONENTS)*/
 
 int main(int argc,char** argv){
+
     FILE *jpeg_image= fopen(argv[1],"r");
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
     extract_header(header,jpeg_image);
     /*printf("paths: %s\n",header->dhts->dht_table[0]->paths[0]);*/
     /*unsigned char* bit=calloc(8,sizeof(unsigned char));*/
     /*block_bitstream_to_symbols_sequence(0,jpeg_image,header->dhts->dht_table[0]);*/
-    /*uint8_t mag=magnitude();*/
+    uint8_t mag=magnitude(-333);
+    printf("mag: %u\n",mag);
     /*printf("magnitude=: %u\n",mag);*/
     /*char* binary_2=int_to_binary(2,2);*/
-    /*char** binary_2_table=int_to_binary_table(2);
+    char** binary_2_table=int_to_binary_table(2);
     for (uint8_t i=0;i<pow(2,2);i++){
-        printf("TAB: %s\n",binary_2_table[i]);
+                printf("TAB: %s\n",binary_2_table[i]);
     }
+
     /*char* code=find_code(binary_2_table,-3,2);
     printf("code for 2: %s\n",code);*/
     /*for (int i=0;i<header->dhts->dht_table[0]->symbols_number_total;i++){
         printf("paths[i]: %s \n",header->dhts->dht_table[0]->paths[i]);
     }*/
     /*uint8_t magnitude=magnitude_char("1111100");
-    printf("magnitude=: %u\n",magnitude);
-    char** binary_table=int_to_binary_table(magnitude);
-    int16_t* signed_table=signed_integers_table(magnitude);
-    int16_t integer=find_signed_integer_from_code(binary_table,signed_table,"1111100",magnitude);
-    printf("INTEGER: %i\n",integer);*/
-    unsigned char symb_DC=EXTRACT_DC_SYMBOL(jpeg_image,header->dhts->dht_table[0]->symbols_number,header);
-    printf("symb_DC %02x\n",symb_DC);
+    printf("magnitude=: %u\n",magnitude);*/
+    int16_t* signed_table=signed_integers_table(2);
+    /*int16_t integer=find_signed_integer_from_code(binary_2_table,signed_table,"010110010",9);*/
+    /*printf("integer: %i\n",integer);*/
+    /*uint16_t mask=0xffff;
+    uint16_t u=integer & mask;
+    printf("INTEGER: %04x\n",u);*/
+    /*unsigned char symb_DC=EXTRACT_DC_SYMBOL(jpeg_image,header->dhts->dht_table[0]->symbols_number,header);
+    printf("symb_DC %02x\n",symb_DC);*/
+
     fclose(jpeg_image);
     free_header(header);
 
