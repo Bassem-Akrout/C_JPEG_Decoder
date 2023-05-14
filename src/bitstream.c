@@ -27,53 +27,53 @@ void create_stream(FILE* file){
                 } else {
                     /* No byte stuffing, write both bytes to output*/
                     if (last_byte_ff) {
-                        fprintf(bitstream, "BYTE: %02X\n", 0xff);
+                    
                         /*Write the bits in the .txt file*/
                         for (int i = 0; i < 8; i++) {
                             int bit = (0xff >> (7 - i)) & 1;
                             fprintf(bitstream, "%d", bit);
                         }
-                        fprintf(bitstream, "\n");
+                       
                         last_byte_ff = false;
                     }
-                    fprintf(bitstream, "BYTE: %02X\n", byte);
+                   
                     /*Write the bits in the .txt file*/
                     for (int i = 0; i < 8; i++) {
                         int bit = (byte >> (7 - i)) & 1;
                         fprintf(bitstream, "%d", bit);
                     }
-                    fprintf(bitstream, "\n");
+                   
                 }
             } else {
                 /* End of file reached, write last byte to output */
-                fprintf(bitstream, "BYTE: %02X\n", byte);
+               
                 /*Write the bits in the .txt file*/
                 for (int i = 0; i < 8; i++) {
                     int bit = (byte >> (7 - i)) & 1;
                     fprintf(bitstream, "%d", bit);
                 }
-                fprintf(bitstream, "\n");
+               
                 break;
             }
         } else {
             /* No byte stuffing, write byte to output*/
             if (last_byte_ff) {
-                fprintf(bitstream, "BYTE: %02X\n", 0xff);
+               
                 /*Write the bits in the .txt file*/
                 for (int i = 0; i < 8; i++) {
                     int bit = (0xff >> (7 - i)) & 1;
                     fprintf(bitstream, "%d", bit);
                 }
-                fprintf(bitstream, "\n");
+               
                 last_byte_ff = false;
             }
-            fprintf(bitstream, "BYTE: %02X\n", byte);
+            
             /*Write the bits in the .txt file*/
             for (int i = 0; i < 8; i++) {
                 int bit = (byte >> (7 - i)) & 1;
                 fprintf(bitstream, "%d", bit);
             }
-            fprintf(bitstream, "\n");
+           
         }
     }
     fclose(bitstream);
