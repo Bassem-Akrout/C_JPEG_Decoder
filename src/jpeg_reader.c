@@ -111,6 +111,7 @@ struct DHT* EXTRACT_DHT(FILE* file){
     dht->symbols=calloc(length_symbols_table,sizeof(uint8_t));
     for (int i=0;i<length_symbols_table ;i++) {
         fread(&(dht->symbols)[i],sizeof(uint8_t),1,file);
+        printf("symb: %02x\n",dht->symbols[i]);
     }
     
     /*Set paths*/
@@ -169,10 +170,10 @@ void extract_header(struct HEADER* header,FILE* file){
     header->dhts->dht_table=calloc(4,sizeof(struct DHT* ));
     header->dhts->dht_counter=0;
     while(fread(&Bytes,sizeof(uint8_t),1,file)==1){ /*READ 1 BY 1 BYTE*/
-        printf("BYTE: %02x\n",Bytes);
+        
         if (Bytes==0xff){ /* IF WE HAVE A BEGINNING OF A MARKER FF*/
             fread(&Bytes,sizeof(uint8_t),1,file); /* ADVANCE BY 1 BYTE*/
-            printf("BYTE: %02x\n",Bytes);
+           
             switch (Bytes) {
                 case 0xd8: /* IF MARKER IS SOI D8, CONTINUE */
                     continue;
