@@ -49,7 +49,7 @@ struct DHT{
     uint16_t section_length;
     unsigned char huffman_information[2];
     uint8_t symbols_number[16];
-    unsigned char* symbols;
+    uint8_t* symbols;
     unsigned char** paths;
     uint8_t symbols_number_total;
 
