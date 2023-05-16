@@ -154,7 +154,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     int8_t * block_list = calloc(64 , sizeof(int8_t));
     uint8_t type_;    
     uint8_t block_detector;
-    huffnode* root ;
+    huffnode* root;
     uint8_t null ;
     uint8_t mag ;
     int8_t DCy, DCb, DCr;
@@ -179,7 +179,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                 if (block_detector == 0) {
                     // DC
                     root = hufftrees[2 * type_];
-                    while (!(root->left == NULL && root->right == NULL)) {//sure ?
+                    while ((root->left != NULL || root->right != NULL)) {//sure ?
                         char bit = BS[i++];
                         if (bit == '0') {
                             root = root->left;
@@ -362,6 +362,33 @@ int main(void){
     //test of find_position
     /*uint8_t order_list[]={2,1,0}; 
     printf("find_position(order_list,0): %u \n",find_position(order_list,5));*/
+    
+    char* BS="110100011100101011001010110111000111011011011010010011010110101000000000000101011110110101000001111100010010110100111010110111000111000010001011000101101011111001001100110010011011101110110011010011111111101100110101101110000111110100010011101010110001001010011101000011110000111000011111010011100001110111100011";
+    
+    uint8_t pre_order_list[1]={1};
+    uint8_t pre_occurrence_list[1]={1};
+    uint8_t components_number=1;
+    uint8_t height=8;
+    uint8_t width=8;
+    uint8_t shapee[2]={8,8};
+    
+    uint8_t l1[16]={1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t l2[16]={0,2,1,2,7,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t l11[1]={7};
+    uint8_t l22[12]={0x17,0x18,0x15,0x08,0x19,0,0x9,0x13,0x23,0x28,0x29,0x37};
 
+    huffnode** hufftrees=calloc(2,sizeof(huffnode*));
+    
+    hufftrees[0]=huffmancodes(l1,l11);
+    hufftrees[1]=huffmancodes(l2,l22);
+    //printf("path should be 100 and is %s \n",root->left->left->right->c);
+    //printf("symbol should be b and is %x \n",root->right->right->right->right->right->right->right->right->left->S);
 
+    LMCU* lmcu= bit_stream_to_LMCU(BS,pre_order_list,pre_occurrence_list,hufftrees,components_number,height,width,shapee);
+    
+    for (uint8_t i = 0; i < 64; i++) {
+        printf("/%x",lmcu->MCUs[0]->LY[0]->content[i]);
+        
+    }    
+    
 }
