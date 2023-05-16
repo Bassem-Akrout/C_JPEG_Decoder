@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h> /* for the function ntohs() */
 #include "jpeg_reader.c"
+
 int main(int argc,char** argv){
     /* If there is no image.jpeg input : USAGE ERROR*/
     if (argc!=2){
@@ -30,7 +31,10 @@ int main(int argc,char** argv){
     extract_header(header,jpeg_image);
     uint8_t pos;
     fread(&pos,sizeof(uint8_t),1,jpeg_image);
-    /*printf(",%d ", header->dhts->dht_table[1]->symbols_number_total);*/
+    printf("path should be 111111110 and is %s \n",header->dhts->dht_table[0]->tree->right->right->right->right->right->right->right->right->left->c);
+    printf("symbol should be b and is %x \n",header->dhts->dht_table[0]->tree->right->right->right->right->right->right->right->right->left->S);
+    printf("f %x \n",(0xfe)>>4);
+    printf("e %x \n",(0xfe)&(0x0f));
     /*for (int i = 0; i < 16; i++) {
     printf(",%d ", header->dhts->dht_table[1]->symbols_number[i]);}*/
 
