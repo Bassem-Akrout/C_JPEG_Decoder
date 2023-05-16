@@ -47,3 +47,5 @@ int16_t **zz_inverse(int16_t* tab_freq){
     return mat_zz_inverse;
 }
 
+/* AFTER ZIGZAG, ASSIGN ELEMENTS TO NEW MCU CONTAINING BLOCKS OF MATRIX */
+
