@@ -7,7 +7,7 @@
 uint8_t SATURATED(float val){
     if (val < 0){ return 0; }
     if (val > 255){ return 255;}
-    else return (uint8_t) val;
+    else return  floor(val);
 }
 
 void one_YCbCr_mcu_to_rgb(/*struct MCU* mcu_ycbcr,*/uint8_t** mcu_rgb,uint8_t** mcu_rgb2,int nb_horz_blocks_in_mcu,int nb_vertical_blocks_in_mcu){
@@ -182,7 +182,10 @@ uint8_t Cr2[2][8][8] = {{
             R = Y[i][j][k] - 0.0009267 * (Cb[i][j][k] - 128) + 1.4016868 * (Cr[i][j][k] - 128);
             G = Y[i][j][k] - 0.3436954 * (Cb[i][j][k] - 128) - 0.7141690 * (Cr[i][j][k] - 128);
             B = Y[i][j][k] + 1.7721604 * (Cb[i][j][k] - 128) + 0.0009902 * (Cr[i][j][k] - 128);
-            
+            printf("R: %f\n",R);
+            printf("sat R: %02x\n",SATURATED(R));
+            printf("sat g: %02x\n",SATURATED(G));
+            printf("sat b: %02x\n",SATURATED(B));
             mcu_rgb[i*64 + j*8 + k][0]=SATURATED(R) ;
             mcu_rgb[i*64 + j*8 + k][1]=SATURATED(G) ; 
             mcu_rgb[i*64 + j*8 + k][2]=SATURATED(B) ;
@@ -190,7 +193,10 @@ uint8_t Cr2[2][8][8] = {{
             R1 = Y2[i][j][k] - 0.0009267 * (Cb2[i][j][k] - 128) + 1.4016868 * (Cr2[i][j][k] - 128);
             G1 = Y2[i][j][k] - 0.3436954 * (Cb2[i][j][k] - 128) - 0.7141690 * (Cr2[i][j][k] - 128);
             B1 = Y2[i][j][k] + 1.7721604 * (Cb2[i][j][k] - 128) + 0.0009902 * (Cr2[i][j][k] - 128);
-
+            printf("R: %f\n",R1);
+            printf("sat R1: %02x\n",SATURATED(R1));
+            printf("sat g1: %02x\n",SATURATED(G1));
+            printf("sat b1: %02x\n",SATURATED(B1));
             mcu_rgb2[i*64 + j*8 + k][0]=SATURATED(R1) ;
             mcu_rgb2[i*64 + j*8 + k][1]=SATURATED(G1) ; 
             mcu_rgb2[i*64 + j*8 + k][2]=SATURATED(B1) ;        
@@ -244,7 +250,7 @@ int main(void){
         printf("0x%02x",mcu_rgb2[i][2]);
         printf("},\n");
         
-    }
+    }*/
 
     return 0;
 }

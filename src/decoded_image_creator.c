@@ -352,23 +352,22 @@ void rainbow(struct SOF* sof,char* jpeg_name){
 {0xc6,0x45,0x6f},
 {0x55,0x00,0x00}
 }};
+// PARTIE ENTIÈRE NOMBRE DES MCUS : sof->height/sof->sampling_vertical[0]*8 .. 
+
 
     for (int l=0;l<sof->height/(sof->sampling_vertical[0]*8);l++)
         for (int j = 0; j < sof->sampling_vertical[0]*8; j++)
             for (int i = 0; i < sof->width/(sof->sampling_horizontal[0]*8);i++){
-                for (int k = 0; k < sof->sampling_vertical[0]*8;k++)
-                    {
-                    fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][0],sizeof(uint8_t),1,new_image);
-                    fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][1],sizeof(uint8_t),1,new_image);
-                    fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][2],sizeof(uint8_t),1,new_image);
-                    }
-                for (int n=sof->sampling_horizontal[0]*sof->sampling_vertical[0]*64/sof->sampling_horizontal[0];n<64+sof->sampling_vertical[0]*8;n++){
-                    fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+n][0],sizeof(uint8_t),1,new_image);
-                    fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+n][1],sizeof(uint8_t),1,new_image);
-                    fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+n][2],sizeof(uint8_t),1,new_image);
+                for (int m=0;m<sof->sampling_horizontal[0];m++){
+		            for (int k = m*sof->sampling_vertical[0]*64; k < m*sof->sampling_vertical[0]*64+sof->sampling_vertical[0]*8;k++)
+                        {
+                        fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][0],sizeof(uint8_t),1,new_image);
+                        fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][1],sizeof(uint8_t),1,new_image);
+                        fwrite(&MCUs[i+l*sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][2],sizeof(uint8_t),1,new_image);
                     }
 
                 }
+}
 }
 
 int main(int argc,char** argv){

@@ -147,14 +147,9 @@ int main(int argc,char** argv){
     /*printf("paths: %s\n",header->dhts->dht_table[0]->paths[0]);*/
     /*unsigned char* bit=calloc(8,sizeof(unsigned char));*/
     /*block_bitstream_to_symbols_sequence(0,jpeg_image,header->dhts->dht_table[0]);*/
-    uint8_t mag=magnitude(-333);
-    printf("mag: %u\n",mag);
     /*printf("magnitude=: %u\n",mag);*/
     /*char* binary_2=int_to_binary(2,2);*/
-    char** binary_2_table=int_to_binary_table(2);
-    for (uint8_t i=0;i<pow(2,2);i++){
-                printf("TAB: %s\n",binary_2_table[i]);
-    }
+    char** binary_2_table=int_to_binary_table(8);
 
     /*char* code=find_code(binary_2_table,-3,2);
     printf("code for 2: %s\n",code);*/
@@ -163,8 +158,9 @@ int main(int argc,char** argv){
     }*/
     /*uint8_t magnitude=magnitude_char("1111100");
     printf("magnitude=: %u\n",magnitude);*/
-    int16_t* signed_table=signed_integers_table(2);
-    /*int16_t integer=find_signed_integer_from_code(binary_2_table,signed_table,"010110010",9);*/
+    int16_t* signed_table=signed_integers_table(8);
+    int16_t integer=find_signed_integer_from_code(binary_2_table,signed_table,"01011011",8);
+    printf("%02x\n",integer);
     /*printf("integer: %i\n",integer);*/
     /*uint16_t mask=0xffff;
     uint16_t u=integer & mask;

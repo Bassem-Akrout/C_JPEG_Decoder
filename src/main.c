@@ -1,11 +1,14 @@
-/*#include "../include/jpeg_reader.h"*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <netinet/in.h> /* for the function ntohs() */
-#include "jpeg_reader.c"
+#include "bitstream.c"
+#include "bitstream_to_mcu.c"
+#include "extraction_mcu.c"
+
 
 int main(int argc,char** argv){
     /* If there is no image.jpeg input : USAGE ERROR*/
@@ -29,15 +32,38 @@ int main(int argc,char** argv){
     FILE *jpeg_image= fopen(argv[1],"r");
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
     extract_header(header,jpeg_image);
-    uint8_t pos;
-    fread(&pos,sizeof(uint8_t),1,jpeg_image);
-    printf("path should be 111111110 and is %s \n",header->dhts->dht_table[0]->tree->right->right->right->right->right->right->right->right->left->c);
-    printf("symbol should be b and is %x \n",header->dhts->dht_table[0]->tree->right->right->right->right->right->right->right->right->left->S);
-    printf("f %x \n",(0xfe)>>4);
-    printf("e %x \n",(0xfe)&(0x0f));
-    /*for (int i = 0; i < 16; i++) {
-    printf(",%d ", header->dhts->dht_table[1]->symbols_number[i]);}*/
+   
+    create_stream(jpeg_image);
+    char* bitstream=bitstream_extraction();
+    uint8_t* order=components_order(header->sof,header->sos);
+    uint8_t* occurence=block_number_list(header->sof);
+    huffnode** hufftrees=malloc(4*sizeof(huffnode*));
+    for (int i=0;i<header->dhts->dht_counter;i++){
+        hufftrees[i]=header->dhts->dht_table[i]->tree;
+        hufftrees[i+2]=header->dhts->dht_table[i+2]->tree;
+    }
+    uint8_t components_number=header->sof->components_number;
+    uint16_t height=header->sof->height;
+    uint16_t width=header->sof->width;
+    uint8_t* shape=NULL;
+    LMCU* list_mcu=bit_stream_to_LMCU(bitstream,order,occurence,hufftrees,components_number,height,width,shape);
+    printf("Cb\n");
+    for (uint8_t i = 0; i < 64; i++) {
+        printf("/%x",*(list_mcu->MCUs[0]->LCb[0]->content[i]));
 
+        
+    }    
+    printf("Cr\n");
+    for (uint8_t i = 0; i < 64; i++) {
+        printf("/%x",*(list_mcu->MCUs[0]->LCr[0]->content[i]));      
+    }    
+    printf("\nDONE\n");
+
+
+
+
+
+    
     
     /*for (int i = 0; i < header->dhts->dht_table[1]->symbols_number_total; i++) {
     printf("path :%s \n", header->dhts->dht_table[1]->paths[i]);}*/
