@@ -5,7 +5,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <netinet/in.h> /* for the function ntohs() */
-#include "huffmann.c"
+
 
 struct APP0* EXTRACT_APP0(FILE* file){
     /*INITIALIZE APP0 STRUCTURE*/
@@ -111,24 +111,12 @@ struct DHT* EXTRACT_DHT(FILE* file){
     dht->symbols=calloc(length_symbols_table,sizeof(uint8_t));
     for (int i=0;i<length_symbols_table ;i++) {
         fread(&(dht->symbols)[i],sizeof(uint8_t),1,file);
-        printf("symb: %02x\n",dht->symbols[i]);
+        //printf("symb: %02x\n",dht->symbols[i]);
     }
     
-    /*Set paths*/
-    
-    dht->paths = malloc(dht->symbols_number_total * sizeof(unsigned char*)); //FREE à faire
-    for (int i = 0; i < dht->symbols_number_total; i++) {
-        dht->paths[i] = calloc(17 , sizeof(unsigned char));//FREE à faire
-    } 
-    
-    huffnode* root = create_huffnode(NULL, "");
-    unsigned char** codes = huffmancodes(dht->symbols_number, root, dht->symbols_number_total);
-    for (int j = 0; j < dht->symbols_number_total; j++){
-        strcpy(dht->paths[j],codes[j]);
-    }
-    
-    free_huffmancodes(codes, dht->symbols_number_total);
-    free_hufftree(root);
+    /*INITIALIZE TREE*/
+    dht->tree = huffmancodes(dht->symbols_number, dht->symbols); //free
+
     return dht;
 }
 
@@ -218,10 +206,7 @@ void free_header(struct HEADER* header){
     }
     for (int i=0;i<header->dhts->dht_counter;i++){
     free(header->dhts->dht_table[i]->symbols);
-    for (int j = 0; j < header->dhts->dht_table[i]->symbols_number_total; j++) {
-    free(header->dhts->dht_table[i]->paths[j]);
-    }
-    free(header->dhts->dht_table[i]->paths);
+
     free(header->dhts->dht_table[i]);
     }
     free(header->dhts->dht_table);

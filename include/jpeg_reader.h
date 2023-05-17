@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-
+#include "../src/huffmann.c"
 
 struct HEADER{
     struct APP0* app0;
@@ -50,7 +50,7 @@ struct DHT{
     unsigned char huffman_information[2];
     uint8_t symbols_number[16];
     uint8_t* symbols;
-    unsigned char** paths;
+    huffnode* tree;
     uint8_t symbols_number_total;
 
 };
