@@ -5,7 +5,7 @@
 
 typedef struct block{
     uint8_t block_type; // 0 for Y // 1 for Cb // 2 for Cr
-    uint8_t* content;
+    int16_t** content;
 } block;
 
 typedef struct MCU{
@@ -23,10 +23,10 @@ typedef struct LMCU{
 } LMCU;
 
 // Function to create a block
-block* createBlock(uint8_t T, int8_t* block_content) {
+block* createBlock(uint8_t T, int16_t** block_content) {
     block* newBlock = malloc(sizeof(block));
     newBlock->block_type = T;
-    newBlock->content = calloc(64,sizeof(uint8_t));
+    newBlock->content = calloc(64,sizeof(int16_t*));
     for (int i = 0; i < 64; i++) {
         newBlock->content[i]=block_content[i];
     }
@@ -55,19 +55,20 @@ LMCU* createLMCU(MCU** MCUs, uint8_t* order_list, uint8_t* occurrence_list, uint
 
 
 
-int8_t find_code(char* index, uint8_t magnitude) {
-    int8_t decimal = 0;
+int16_t find_code(char* index, uint8_t magnitude) {
+    
+    int16_t decimal = 0;
     uint8_t power = magnitude - 1;
 
     if (index[0] == '0') {
-        decimal = -((1<<magnitude) - 1);
+        decimal = -((int16_t)(1<<magnitude) - 1);
 
     }
 
     for (int i = 0; i < magnitude; i++) {
         char digit = index[i];
         if (digit == '1') {
-            decimal += (1<<power);
+            decimal += (int16_t)(1<<power);
         }
         power -= 1;
     }
@@ -95,10 +96,10 @@ uint8_t* typess(uint8_t *occurence_list, uint8_t *order_list) {
     for (uint8_t i = 0; i < j0; i++){
         types[i]=i0;
     }
-    for (uint8_t i =i0; i < j0+j1; i++){
+    for (uint8_t i =j0; i < j0+j1; i++){
         types[i]=i1;
     }
-    for (uint8_t i = j1+j2; i < j0+j1+j2; i++){
+    for (uint8_t i = j0+j1; i < j0+j1+j2; i++){
         types[i]=i2;
     }
     return types;
@@ -106,7 +107,7 @@ uint8_t* typess(uint8_t *occurence_list, uint8_t *order_list) {
 }
 
 
-uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint32_t lst_length) {
+uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint8_t lst_length) {
     for (uint8_t index = 0; index < lst_length; index++) {
         if (lst[index] == i) {
             return index;
@@ -119,7 +120,7 @@ uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint32_t lst_length) {
 
 
 LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurrence_list, huffnode** hufftrees,uint8_t components_number,uint8_t height, uint8_t width, uint8_t* shapee) {
-    uint8_t i = 0;
+    uint32_t i = 0;
     uint8_t* order_list =calloc(3,sizeof(uint8_t));
     uint8_t* occurrence_list =calloc(3,sizeof(uint8_t));
     if (components_number==1){
@@ -140,26 +141,29 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     }
 
     uint8_t* types = typess(occurrence_list, order_list);
-    uint8_t MCU_counter = 0;
-    uint32_t blocks_in_MCU = 0;
+    uint32_t MCU_counter = 0;
+    uint8_t blocks_in_MCU = 0;
     for (int k = 0; k < 3; k++) {
         blocks_in_MCU += occurrence_list[k];
     }    
-    uint32_t total_nbr_MCU = (uint32_t)((uint32_t)(width * height) / (blocks_in_MCU) * 64);
+    uint32_t total_nbr_MCU = (uint32_t)((uint32_t)(width * height) / (occurrence_list[0] *  64));
     MCU** MCU_list = calloc(total_nbr_MCU,sizeof(MCU*));
 
     uint8_t MCU_detector;
     block** list_of_blocks = malloc(blocks_in_MCU * sizeof(block*));
     uint8_t block_counter;
-    int8_t * block_list = calloc(64 , sizeof(int8_t));
+    int16_t ** block_list = malloc(64 * sizeof(int16_t*));
+    for (int i = 0; i < 64; i++) {
+    block_list[i] = malloc(sizeof(int16_t));
+    }
     uint8_t type_;    
     uint8_t block_detector;
     huffnode* root;
     uint8_t null ;
     uint8_t mag ;
-    int8_t DCy, DCb, DCr;
-    int8_t NotDC;
-    int8_t Ac ;
+    int16_t DCy, DCb, DCr;
+    int16_t NotDC;
+    int16_t Ac ;
     block** Y_list = malloc(occurrence_list[0] * sizeof(block*));
     block** Cb_list = malloc(occurrence_list[1] * sizeof(block*));
     block** Cr_list = malloc(occurrence_list[2] * sizeof(block*));
@@ -167,7 +171,8 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     MCU* new_MCU = malloc(sizeof(MCU)) ;
     int Y_counter ,Cb_counter,Cr_counter;
     char* index;
-    while (i < strlen(BS) - 7) {
+
+    while (i < strlen(BS) - 7) {//while cursor <-7;
         MCU_detector = 0;      
         //one mcu
         while (MCU_detector < blocks_in_MCU) {
@@ -179,7 +184,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                 if (block_detector == 0) {
                     // DC
                     root = hufftrees[2 * type_];
-                    while ((root->left != NULL || root->right != NULL)) {//sure ?
+                    while (!(root->left == NULL && root->right == NULL)) {//sure ?
                         char bit = BS[i++];
                         if (bit == '0') {
                             root = root->left;
@@ -195,6 +200,8 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                     }
                     index = malloc((mag + 1) * sizeof(char));//// IL FAUT free juste apres
                     for (int j = 0; j < mag; j++) {
+                        //char c = fgetc(bitstream);
+                        //index[j]=c;
                         index[j] = BS[i++];
                     }
                     index[mag] = '\0';
@@ -206,27 +213,27 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                         //DC0
                         if (type_ == 0) {
                             DCy = find_code(index, mag);
-                            block_list[block_detector] = DCy;
+                            *(block_list[block_detector]) = DCy;
                         } else if (type_ == 1) {
                             DCb = find_code(index, mag);
-                            block_list[block_detector] = DCb;
+                            *(block_list[block_detector]) = DCb;
                         } else {
                             DCr = find_code(index, mag);
-                            block_list[block_detector] = DCr;
+                            *(block_list[block_detector]) = DCr;
                         }
                         
                     } else {
                         //DCi
                         NotDC = find_code(index, mag);//if mag==0 index = "" and find_code(index, mag)=0
                         if (type_ == 0) {
-                            DCy += NotDC;
-                            block_list[block_detector] = DCy;
+                            DCy += NotDC; //verify notDc is added correctly
+                            *(block_list[block_detector]) = DCy;
                         } else if (type_ == 1) {
                             DCb += NotDC;
-                            block_list[block_detector] = DCb;
+                            *(block_list[block_detector]) = DCb;
                         } else {
                             DCr += NotDC;
-                            block_list[block_detector] = DCr;
+                            *(block_list[block_detector]) = DCr;
                         }
                     }
                     free(index);
@@ -252,12 +259,12 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                     if (null == 0 && mag == 0){
                         //EOB
                         for (int j = block_detector; j < 64; j++) {
-                            block_list[block_detector++] = 0;
+                            *(block_list[block_detector++]) = 0;
                         }
                     }
                     else{
                         for (int j = 0; j < null; j++) {
-                            block_list[block_detector++] = 0;
+                            *(block_list[block_detector++]) = 0;
                         }
                         if (mag != 0) {
                             index = malloc((mag + 1) * sizeof(char));
@@ -267,9 +274,9 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                             index[mag] = '\0';
                             Ac = find_code(index, mag);
                             free(index);
-                            block_list[block_detector++] = Ac;
+                            *(block_list[block_detector++]) = Ac;
                         } else {
-                            block_list[block_detector++] = 0;
+                            *(block_list[block_detector++]) = 0;
                         }
                     }
                 }
@@ -308,6 +315,11 @@ MCU_lis->order_list = order_list;
 MCU_lis->occurrence_list = occurrence_list;
 MCU_lis->MCU_shape = shapee;
 MCU_lis->MCUs = MCU_list;
+//freez
+free(types);
+
+free(block_list);
+free(list_of_blocks);
 
 return MCU_lis;
 }
@@ -363,8 +375,8 @@ int main(void){
     /*uint8_t order_list[]={2,1,0}; 
     printf("find_position(order_list,0): %u \n",find_position(order_list,5));*/
     
-    char* BS="110100011100101011001010110111000111011011011010010011010110101000000000000101011110110101000001111100010010110100111010110111000111000010001011000101101011111001001100110010011011101110110011010011111111101100110101101110000111110100010011101010110001001010011101000011110000111000011111010011100001110111100011";
-    
+    //invader works just fine
+    /*char* BS="01111100110100011100101011001010110111000111011011011010010011010110101000000000000101011110110101000001111100010010110100111010110111000111000010001011000101101011111001001100110010011011101110110011010011111111101100110101101110000111110100010011101010110001001010011101000011110000111000011111010011100001110111100011";
     uint8_t pre_order_list[1]={1};
     uint8_t pre_occurrence_list[1]={1};
     uint8_t components_number=1;
@@ -377,7 +389,11 @@ int main(void){
     uint8_t l11[1]={7};
     uint8_t l22[12]={0x17,0x18,0x15,0x08,0x19,0,0x9,0x13,0x23,0x28,0x29,0x37};
 
-    huffnode** hufftrees=calloc(2,sizeof(huffnode*));
+    huffnode** hufftrees=calloc(2,sizeof(huffnode*));*/
+    
+    //gris
+    uint8_t pre_order_list[1]={1};
+    uint8_t pre_occurrence_list[1]={1};
     
     hufftrees[0]=huffmancodes(l1,l11);
     hufftrees[1]=huffmancodes(l2,l22);
@@ -387,7 +403,7 @@ int main(void){
     LMCU* lmcu= bit_stream_to_LMCU(BS,pre_order_list,pre_occurrence_list,hufftrees,components_number,height,width,shapee);
     
     for (uint8_t i = 0; i < 64; i++) {
-        printf("/%x",lmcu->MCUs[0]->LY[0]->content[i]);
+        printf("/%x",*(lmcu->MCUs[0]->LY[0]->content[i]));
         
     }    
     
