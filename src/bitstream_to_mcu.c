@@ -86,9 +86,6 @@ uint8_t find_position(uint8_t *order_list, uint8_t i  ) {
 }
 
 uint8_t* typess(uint8_t *occurence_list, uint8_t *order_list) {
-    
-    /*YYYYCBCBCBCRCR*/
-
     uint8_t i0= order_list[0];
     uint8_t i1= order_list[1];
     uint8_t i2= order_list[2];
@@ -130,7 +127,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
         order_list[0] = 1;
         order_list[1] = 0;
         order_list[2] = 0;
-        occurrence_list[0] = pre_occurrence_list[0]; // mafhmnech aleh maayatesh lel fonction directement
+        occurrence_list[0] = pre_occurrence_list[0];
         occurrence_list[1] = 0;
         occurrence_list[2] = 0;
     }
@@ -162,7 +159,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
 
     uint8_t type_;    
     uint8_t block_detector;
-    huffnode* root=create_huffnode(NULL,"");
+    huffnode* root;
     uint8_t null ;
     uint8_t mag ;
     int16_t DCy, DCb, DCr;
@@ -197,14 +194,9 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                         char bit = BS[i++];
                         if (bit == '0') {
                             root = root->left;
-                            //printf("symb %u\n",root->S);
-                            if (root==NULL) break;
                         } else {
                             root = root->right;
-                            if (root==NULL) break;
                         }
-                        
-
                     }
                     null=0;
                     mag=0;
@@ -300,7 +292,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
         block_counter++;
     }
 
-    printf("%u\n",list_of_blocks[0]->content[0]);
+ 
     Y_counter = 0;
     Cb_counter = 0;
     Cr_counter = 0;
