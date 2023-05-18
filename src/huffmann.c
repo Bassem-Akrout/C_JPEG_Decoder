@@ -2,17 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
-typedef struct huffnode {
-    int D;
-    char c[17];
-    struct huffnode* left;
-    struct huffnode* right;
-    struct huffnode* P;
-    uint8_t S;
-} 
-huffnode;
-
+#include "../include/huffman.h"
 huffnode* create_huffnode(huffnode* parent, char* char_value) {
     huffnode* new_node = (huffnode*)malloc(sizeof(huffnode));
     if (parent == NULL) {

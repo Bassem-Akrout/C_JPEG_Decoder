@@ -5,44 +5,49 @@
 #include <math.h>
 
 
-uint8_t S(int x,int y,int16_t tab_freq[8][8]){
-    /* TAB FREQ IS THE 8*8 BLOCK AFTER IZZ AND IQ */
-    float sum=0;
-    for (int i=0;i<8;i++){
-        for (int j=0;j<8;j++){
-            if (i==0 && j==0){
-                sum+=(1/2)*cos((2*x+1)*i*M_PI/16)*cos((2*y+1)*j*M_PI/16)*tab_freq[i][j];
-            }
-            else if ((i==0 && j!=0) || (i!=0 && j==0)){
-                sum+=(1/sqrt(2))*cos((2*x+1)*i*M_PI/16)*cos((2*y+1)*j*M_PI/16)*tab_freq[i][j];
-            }
-            else{
-                sum+=cos((2*x+1)*i*M_PI/16)*cos((2*y+1)*j*M_PI/16)*tab_freq[i][j];
-            }
+#define PI 3.14159265358979323846
 
+double C(uint8_t x)
+{
+        double value = 1;
 
-        }
-    }
-    float sum_total=sum/4+128;
-    if (sum_total<0) {printf("s= %f , %u\n",(sum/4)+128,0);
-        return 0;}
-    else if (sum_total>255) { printf("s= %f , %u\n",(sum/4)+128,255);
-        return (uint8_t) 255;}
-    else {printf("s= %f , %u\n",(sum/4)+128,(uint8_t)sum/4+128);
-    return (uint8_t) sum_total;}
+        if (x == 0)
+                value = 1/sqrt(2);
 
+        return value;
 }
 
-void idct(uint8_t out[8][8],int16_t tab_freq[8][8]){
+uint8_t S(uint8_t x,uint8_t y,int16_t*** tab_freq){
+    /* TAB FREQ IS THE 8*8 BLOCK AFTER IZZ AND IQ */
+    double sum=0;
+    
+    for (uint8_t i=0;i<8;i++){
+        for (uint8_t j=0;j<8;j++){
+            sum+=C(i)*C(j)*cos((2*x+1)*i*PI/16)*cos((2*y+1)*j*PI/16)* (double)*(tab_freq)[i][j];
+                
+        }
+    }
+    
+    double sum_total=sum/4+128.;
+    if (sum_total<0) 
+        return 0;
+    else if (sum_total>255) 
+        return (uint8_t) 255;
+    else 
+    return (uint8_t) floor(sum_total+0.5);
+    }
+
+
+void idct(uint8_t*** out,int16_t*** tab_freq){
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             uint8_t value=S(i,j,tab_freq);
-            out[i][j]=value;
+            *(out)[i][j]=value;
         }
     }
 }
 
-int main(void){
+/*int main(void){
     int16_t freq[8][8]={{6,-9,-1,-1,0,0,0,0},{4,1,-1,1,1,0,0,1},{-7,0,0,-1,0,0,0,0},{2,1,-1,0,0,0,0,-1},{-1,0,0,0,0,0,0,0},{1,0,-1,0,0,0,0,0},{0,0,0,0,0,0,0,0},{1,0,0,0,0,0,0,0}};
     uint8_t out[8][8];
     printf("entier: %i\n",freq[0][1]);
@@ -53,4 +58,4 @@ int main(void){
         }
     }
     
-}
+}*/

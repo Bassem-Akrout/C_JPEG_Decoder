@@ -3,6 +3,6 @@
 #include <stdint.h>
 
 /*FONCTIONS*/
-extern int16_t ** zz_inverse(int16_t* tab_freq);
+extern void zz_inverse(int16_t*** mat_zz_inverse,int16_t** tab_freq);
 
 #endif /*_IZZ_H_*/
