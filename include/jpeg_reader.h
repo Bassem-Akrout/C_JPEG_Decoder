@@ -1,9 +1,9 @@
 #ifndef _JPEG_READER_H_
 #define _JPEG_READER_H_
-
 #include <stdio.h>
 #include <stdint.h>
-#include "../src/huffmann.c"
+#include "huffman.h"
+
 
 struct HEADER{
     struct APP0* app0;
