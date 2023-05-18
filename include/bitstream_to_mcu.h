@@ -19,7 +19,7 @@ typedef struct LMCU{
     MCU** MCUs;
     uint8_t* order_list;
     uint8_t* occurrence_list;
-    uint8_t* MCU_shape;
+    uint32_t MCU_counter;
 } LMCU;
 
 

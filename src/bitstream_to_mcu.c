@@ -26,12 +26,12 @@ MCU* createMCU(block** LY, block** LCb, block** LCr/*, int S*/) {
 }
 
 // Function to create an LMCU
-LMCU* createLMCU(MCU** MCUs, uint8_t* order_list, uint8_t* occurrence_list, uint8_t* MCU_shape) {
+LMCU* createLMCU(MCU** MCUs, uint8_t* order_list, uint8_t* occurrence_list, uint32_t MCU_counter) {
     LMCU* new_LMCU = malloc(sizeof(LMCU));
     new_LMCU->MCUs = MCUs;
     new_LMCU->order_list = order_list;
     new_LMCU->occurrence_list = occurrence_list;
-    new_LMCU->MCU_shape = MCU_shape;
+    new_LMCU->MCU_counter=MCU_counter;
     return new_LMCU;
 }
 
@@ -101,7 +101,7 @@ uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint8_t lst_length) {
 
 
 
-LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurrence_list, huffnode** hufftrees,uint8_t components_number,uint16_t height, uint16_t width, uint8_t* shapee) {
+LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurrence_list, huffnode** hufftrees,uint8_t components_number,uint16_t height, uint16_t width) {
     uint32_t i = 0;
     uint8_t* order_list =calloc(3,sizeof(uint8_t));
     uint8_t* occurrence_list =calloc(3,sizeof(uint8_t));
@@ -135,7 +135,6 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     }
     uint8_t MCU_detector;
     block** list_of_blocks ;
-    uint8_t block_counter;
     int16_t ** block_list;
     
 
@@ -160,7 +159,6 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
         list_of_blocks = malloc(blocks_in_MCU * sizeof(block*));
         //one mcu
         while (MCU_detector < blocks_in_MCU) {
-            block_counter = 0;
             type_ = types[MCU_detector];
             block_detector = 0;
             block_list = malloc(64 * sizeof(int16_t*));
@@ -271,7 +269,6 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
         }
         list_of_blocks[MCU_detector] =createBlock(type_,block_list);
         MCU_detector++;
-        block_counter++;
     }
 
  
@@ -302,7 +299,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
 //printf "%x", *(MCU_list[0]->LY[0]->content[0])
 
 
-LMCU* MCU_lis = createLMCU(MCU_list,  order_list,  occurrence_list,  shapee);
+LMCU* MCU_lis = createLMCU(MCU_list,  order_list,  occurrence_list,MCU_counter);
 
 //freez
 free(types);
