@@ -1,22 +1,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "jpeg_reader.c"
+#include "../include/jpeg_reader.h"
 
 /* THIS FUNCTION WORKS ON 1 MCU AND RETURNS THE NUMBER OF Y , Cb , Cr COMPONENTS AS WELL AS THE ORDER OF Y, Cb, Cr COMPONENTS*/
 
-
-struct component{
-    uint8_t identifier_C;
-    uint8_t sampling_horziontal;
-    uint8_t sampling_vertical;
-    uint8_t i_q;
-};
-
-
-/*il faut extraire le nombre de blocs par mcu 
-    if N==1 : seulement Y : on a donc : - identifiant/ facteur vertical/ facteur horizontal / identifiant iq 
-    if N==3 : Y, Cb , Cr : on a donc - identifiant pour chaque composante / facteur vertical / horizontal / identifiant iq */
 
 
 uint8_t bloc_number_component(uint8_t sampling_horz,uint8_t sampling_vertical){
@@ -27,13 +15,14 @@ uint8_t bloc_number_component(uint8_t sampling_horz,uint8_t sampling_vertical){
 uint8_t* components_order(struct SOF* sof,struct SOS* sos){
     /*RETURNS ORDER OF COMPONENTS */
     uint8_t components_number=sof->components_number;
-    if (components_number==1)
-       { printf("Only one component Y");
-        return NULL; }
+    uint8_t* order=malloc(components_number*sizeof(uint8_t));
+    if (components_number==1){
+        order[0]=1;
+        order[1]=0;
+        order[2]=0;
+    }
     
     else { /* N=3 */
-
-        uint8_t* order=malloc(3*sizeof(uint8_t));
         for (uint8_t i=0;i<3;i++){
             for (uint8_t j=0;j<3;j++){
                 if (sos->i_c[i]==sof->i_c[j]){
@@ -42,8 +31,9 @@ uint8_t* components_order(struct SOF* sof,struct SOS* sos){
             }
 
         }
-    return order;
+    
     }
+    return order;
     
     
 
@@ -69,7 +59,7 @@ uint8_t* block_number_list(struct SOF* sof){
 
 
 
-int main(int argc,char** argv){
+/*int main(int argc,char** argv){
 
     FILE *jpeg_image= fopen(argv[1],"r");
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
@@ -81,10 +71,12 @@ int main(int argc,char** argv){
     for (int i=0;i<nb_composantes;i++){
         printf("block: %u\n",b_number[i]);
         printf("ORDER: %u\n",order[i]);
+        printf("sof: %u\n",header->sof->i_c[i]);
+        printf("sos: %u\n",header->sos->i_c[i]);
     }
 
 
 
-}
+}*/
 
 

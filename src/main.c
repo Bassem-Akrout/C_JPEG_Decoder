@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <arpa/inet.h>
-#include <netinet/in.h> /* for the function ntohs() */
-#include "jpeg_reader.c"
-#include "bitstream.c"
+#include "../include/jpeg_reader.h"
+#include "../include/bitstream.h"
+#include "../include/bitstream_to_mcu.h"
+#include "../include/extraction_mcu.h"
+
+
 int main(int argc,char** argv){
     /* If there is no image.jpeg input : USAGE ERROR*/
     if (argc!=2){
@@ -29,20 +31,34 @@ int main(int argc,char** argv){
     FILE *jpeg_image= fopen(argv[1],"r");
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
     extract_header(header,jpeg_image);
-    uint8_t pos;
-    fread(&pos,sizeof(uint8_t),1,jpeg_image);
-    /*printf("path should be 111111110 and is %s \n",header->dhts->dht_table[0]->tree->right->right->right->right->right->right->right->right->left->c);
-    printf("symbol should be b and is %x \n",header->dhts->dht_table[0]->tree->right->right->right->right->right->right->right->right->left->S);
-    printf("f %x \n",(0xfe)>>4);
-    printf("e %x \n",(0xfe)&(0x0f));*/
-    /*for (int i = 0; i < 16; i++) {
-    printf(",%d ", header->dhts->dht_table[1]->symbols_number[i]);}*/
-
     create_stream(jpeg_image);
+    char* bitstream=bitstream_extraction();
+    uint8_t* pre_order_list=components_order(header->sof,header->sos);
+    printf("order: %u\n",pre_order_list[0]);
+    uint8_t* pre_occurrence_list=block_number_list(header->sof);
+    huffnode** hufftrees=malloc(6*sizeof(huffnode*));
+    hufftrees[0]=header->dhts->dht_table[0]->tree;
+    hufftrees[1]=header->dhts->dht_table[1]->tree;
+    hufftrees[2]=header->dhts->dht_table[2]->tree;
+    hufftrees[3]=header->dhts->dht_table[3]->tree;
+    hufftrees[4]=header->dhts->dht_table[2]->tree;
+    hufftrees[5]=header->dhts->dht_table[3]->tree;
+
     
-    /*for (int i = 0; i < header->dhts->dht_table[1]->symbols_number_total; i++) {
-    printf("path :%s \n", header->dhts->dht_table[1]->paths[i]);}*/
-    fclose(jpeg_image);
+    uint8_t components_number=header->sof->components_number;
+    printf("COMP: %u\n",components_number);
+    uint16_t height=header->sof->height;
+    uint16_t width=header->sof->width;
+    uint8_t shapee[2]={0,0};
+    
+    // test lmcu
+    LMCU* mcu=bit_stream_to_LMCU(bitstream, pre_order_list, pre_occurrence_list, hufftrees,components_number,height, width, shapee); 
+    for (uint8_t i = 0; i < 64; i++) {
+        printf("/%x",*(mcu->MCUs[1500]->LY[1]->content[i]));
+    
+
+        
+    }    
     free_header(header);
     return EXIT_SUCCESS;
     //free MCU_lis;
