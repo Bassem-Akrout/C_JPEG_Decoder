@@ -1,6 +1,8 @@
 #ifndef _IZZ_H_
 #define _IZZ_H_
 #include <stdint.h>
+#include "jpeg_reader.h"
+#include "bitstream_to_mcu.h"
 
 //MATRIX
 typedef struct M_block{
@@ -23,6 +25,8 @@ typedef struct M_LMCU{
 } M_LMCU;
 
 /*FONCTIONS*/
-extern void zz_inverse(int16_t*** mat_zz_inverse,int16_t** tab_freq);
-extern M_block* create_M_block(block*  blck);
+extern void zz_inverse(int16_t*** mat_zz_inverse,int16_t** tab_freq,struct DQT* dqt_table);
+extern void create_M_block(M_block* new_M_Block,block*  block,struct DQT* dqt_table);
+
+
 #endif /*_IZZ_H_*/

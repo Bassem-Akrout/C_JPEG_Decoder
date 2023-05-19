@@ -7,11 +7,12 @@
 #include "../include/bitstream.h"
 #include "../include/bitstream_to_mcu.h"
 #include "../include/extraction_mcu.h"
-#include "../include/quantification.h"
 #include "../include/izz.h"
 #include "../include/idct.h"
+#include "../include/treatment.h"
 
 int main(int argc,char** argv){
+
     /* If there is no image.jpeg input : USAGE ERROR*/
     if (argc!=2){
         fprintf(stderr,"Usage: %s fichier.jpeg\n",argv[0]);
@@ -34,40 +35,41 @@ int main(int argc,char** argv){
     struct HEADER* header=calloc(1,sizeof(struct HEADER));
     extract_header(header,jpeg_image);
     create_stream(jpeg_image);
+    printf("test1");
     char* bitstream=bitstream_extraction();
     uint8_t* pre_order_list=components_order(header->sof,header->sos);
     printf("order: %u\n",pre_order_list[0]);
     printf("order: %u\n",pre_order_list[1]);
     printf("order: %u\n",pre_order_list[2]);
-
+    printf("test2");
     uint8_t* pre_occurrence_list=block_number_list(header->sof);
     printf("order: %u\n",pre_occurrence_list[0]);
         printf("order: %u\n",pre_occurrence_list[1]);
     printf("order: %u\n",pre_occurrence_list[2]);
 
-    huffnode** hufftrees=malloc(2*sizeof(huffnode*));
+    huffnode** hufftrees=malloc(6*sizeof(huffnode*));
     hufftrees[0]=header->dhts->dht_table[0]->tree;
     hufftrees[1]=header->dhts->dht_table[1]->tree;
-    /*hufftrees[2]=header->dhts->dht_table[2]->tree;
+    hufftrees[2]=header->dhts->dht_table[2]->tree;
     hufftrees[3]=header->dhts->dht_table[3]->tree;
     hufftrees[4]=header->dhts->dht_table[2]->tree;
-    hufftrees[5]=header->dhts->dht_table[3]->tree;*/
-
+    hufftrees[5]=header->dhts->dht_table[3]->tree;
     
     uint8_t components_number=header->sof->components_number;
-    printf("COMP: %u\n",components_number);
+    //printf("COMP: %u\n",components_number);
     uint16_t height=header->sof->height;
     uint16_t width=header->sof->width;
-    uint8_t shapee[2]={0,0};
     
     // test lmcu
-    LMCU* mcu=bit_stream_to_LMCU(bitstream, pre_order_list, pre_occurrence_list, hufftrees,components_number,height, width, shapee); 
+    LMCU* lmcu=bit_stream_to_LMCU(bitstream, pre_order_list, pre_occurrence_list, hufftrees,components_number,height, width); 
+    printf("\n");
     for (uint8_t i = 0; i < 64; i++) {
-        printf("/%x",*(mcu->MCUs[0]->LY[0]->content[i]));
+        printf("/%x",*(lmcu->MCUs[0]->LY[0]->content[i]));
     }
+    printf("\n");
     uint32_t total_mcu=header->sof->height/(header->sof->sampling_vertical[0]*8)*header->sof->width/(header->sof->sampling_horizontal[0]*8);
     uint8_t nb_blocks_Y=header->sof->sampling_horizontal[0]*header->sof->sampling_vertical[0];
-    for (uint32_t i=0;i<total_mcu;i++){
+    /*for (uint32_t i=0;i<total_mcu;i++){
         for (int j=0;j<nb_blocks_Y;j++){
             int16_t*** matrix_block=malloc(8*sizeof(int16_t**));
             for (int l=0;l<8;l++) {
@@ -76,11 +78,11 @@ int main(int argc,char** argv){
                         matrix_block[l][z]=malloc(8*sizeof(int16_t));
             }
 
-            quantification(mcu->MCUs[i]->LY[j]->content,header->dqts->dqt_table[0]->quantification_values);
+            quantification(lmcu->MCUs[i]->LY[j]->content,header->dqts->dqt_table[0]->quantification_values);
                 for (int k=0;k<64;k++) 
-                printf("quant: %02x\n",*(mcu->MCUs[i]->LY[j]->content[k]));
+                printf("quant: %02x\n",*(lmcu->MCUs[i]->LY[j]->content[k]));
             printf("QUANTIFICATION OK\n");
-            zz_inverse(matrix_block,mcu->MCUs[i]->LY[j]->content);
+            zz_inverse(matrix_block,lmcu->MCUs[i]->LY[j]->content);
             printf("inverse\n");
             for (int k=0;k<8;k++)
                 for (int l=0;l<8;l++)
@@ -98,8 +100,26 @@ int main(int argc,char** argv){
                     printf("idct: %x\n",*(matrix_block_idct)[k][l]);
         
         }
+    }*/
+    printf("test00 \n");
+    printf("\n");
+    M_LMCU* m_lmcu= create_M_LMCU( lmcu, header->dqts , header->sof->components_number,header->sof);
+        for (uint8_t i = 0; i < 8; i++) {
+                for (uint8_t j = 0; j < 8; j++) {
+        printf(" %x",*(m_lmcu->M_MCUs[1]->LCb[0]->content[i][j]));
+
     }
-      
+    
+    printf("\n");
+    }
+        for (uint8_t i = 0; i < 8; i++) {
+                for (uint8_t j = 0; j < 8; j++) {
+        printf(" %x ",*(m_lmcu->M_MCUs[0]->LCr[0]->content[i][j]));
+
+    }
+    printf("\n");
+    }
+
     free_header(header);
     return EXIT_SUCCESS;
     //free MCU_lis;

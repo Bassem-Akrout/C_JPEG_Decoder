@@ -7,7 +7,7 @@
 
 /* EXTRACT BITSTREAM INTO A STRING IN ORDER TO READ BIT BY BIT */
 
-FILE* create_stream(FILE* file){
+void create_stream(FILE* file){
 
     
     /*CREATES BITSTREAM TEXT AND ELIMINATE BYTESTUFFING*/
@@ -91,10 +91,10 @@ char* bitstream_extraction(void){
     fseek(bitstream, 0, SEEK_END);
     long file_size = ftell(bitstream);
     fseek(bitstream, 0, SEEK_SET);
-    printf("length: %li\n",file_size);
+    //printf("length: %li\n",file_size);
     char* bitstream_char=(char*)malloc((file_size+1)*sizeof(char));
-    size_t read_size = fread(bitstream_char, sizeof(char), file_size, bitstream);
-    printf("%s\n",bitstream_char);
+    fread(bitstream_char, sizeof(char), file_size, bitstream);
+    //printf("%s\n",bitstream_char);
     bitstream_char[file_size]='\0';
     fclose(bitstream);
 

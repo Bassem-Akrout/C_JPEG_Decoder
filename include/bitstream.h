@@ -2,7 +2,7 @@
 #define _BITSTREAM_H_
 #include <stdio.h>
 
-extern FILE* create_stream(FILE* file);
+extern void create_stream(FILE* file);
 extern char* bitstream_extraction(void);
 
 
