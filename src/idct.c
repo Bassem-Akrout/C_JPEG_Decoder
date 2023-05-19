@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
+#include "../include/izz.h"
+#include "../include/idct.h"
 
 
 #define PI 3.14159265358979323846
@@ -46,6 +48,24 @@ void idct(uint8_t*** out,int16_t*** tab_freq){
         }
     }
 }
+
+void create_iM_block(iM_block* new_iM_Block, M_block*  M_block){
+    
+    new_iM_Block->block_type = M_block->block_type;
+    new_iM_Block->content = calloc(8,sizeof(uint8_t**));
+
+    for (int i = 0; i < 8; i++) {
+        new_iM_Block->content[i]=calloc(8,sizeof(uint8_t*));
+        for (int j = 0; j < 8; j++) {
+            new_iM_Block->content[i][j]=calloc(8,sizeof(uint8_t));
+        }
+    }
+    idct(new_iM_Block->content,M_Block->content);
+    free(M_block->content);
+    free(M_block);
+}
+
+
 
 /*int main(void){
     int16_t freq[8][8]={{6,-9,-1,-1,0,0,0,0},{4,1,-1,1,1,0,0,1},{-7,0,0,-1,0,0,0,0},{2,1,-1,0,0,0,0,-1},{-1,0,0,0,0,0,0,0},{1,0,-1,0,0,0,0,0},{0,0,0,0,0,0,0,0},{1,0,0,0,0,0,0,0}};

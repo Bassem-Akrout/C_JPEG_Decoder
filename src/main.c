@@ -103,7 +103,7 @@ int main(int argc,char** argv){
     }*/
     printf("test00 \n");
     printf("\n");
-    M_LMCU* m_lmcu= create_M_LMCU( lmcu, header->dqts , header->sof->components_number,header->sof);
+    iM_LMCU* m_lmcu= create_M_LMCU( lmcu, header->dqts , header->sof->components_number,header->sof);
         for (uint8_t i = 0; i < 8; i++) {
                 for (uint8_t j = 0; j < 8; j++) {
         printf(" %x",*(m_lmcu->M_MCUs[1]->LCb[0]->content[i][j]));
