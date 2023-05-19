@@ -15,11 +15,10 @@ uint8_t bloc_number_component(uint8_t sampling_horz,uint8_t sampling_vertical){
 uint8_t* components_order(struct SOF* sof,struct SOS* sos){
     /*RETURNS ORDER OF COMPONENTS */
     uint8_t components_number=sof->components_number;
-    uint8_t* order=malloc(components_number*sizeof(uint8_t));
+    uint8_t* order=malloc(sof->components_number*sizeof(uint8_t));
     if (components_number==1){
         order[0]=1;
-        order[1]=0;
-        order[2]=0;
+        
     }
     
     else { /* N=3 */
@@ -47,6 +46,7 @@ uint8_t* block_number_list(struct SOF* sof){
     uint8_t* block_number=malloc(sof->components_number*sizeof(uint8_t));
     if (nb_comp==1){
         block_number[0]=sof->sampling_horizontal[0]*sof->sampling_vertical[0];
+
     }
     else {
         for (int i=0;i<nb_comp;i++){

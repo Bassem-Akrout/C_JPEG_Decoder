@@ -11,6 +11,7 @@
 #include "../include/idct.h"
 #include "../include/treatment.h"
 
+
 int main(int argc,char** argv){
 
     /* If there is no image.jpeg input : USAGE ERROR*/
@@ -38,22 +39,21 @@ int main(int argc,char** argv){
     printf("test1");
     char* bitstream=bitstream_extraction();
     uint8_t* pre_order_list=components_order(header->sof,header->sos);
-    printf("order: %u\n",pre_order_list[0]);
-    printf("order: %u\n",pre_order_list[1]);
-    printf("order: %u\n",pre_order_list[2]);
-    printf("test2");
+    
     uint8_t* pre_occurrence_list=block_number_list(header->sof);
-    printf("order: %u\n",pre_occurrence_list[0]);
-        printf("order: %u\n",pre_occurrence_list[1]);
-    printf("order: %u\n",pre_occurrence_list[2]);
+    
 
-    huffnode** hufftrees=malloc(6*sizeof(huffnode*));
-    hufftrees[0]=header->dhts->dht_table[0]->tree;
-    hufftrees[1]=header->dhts->dht_table[1]->tree;
-    hufftrees[2]=header->dhts->dht_table[2]->tree;
-    hufftrees[3]=header->dhts->dht_table[3]->tree;
-    hufftrees[4]=header->dhts->dht_table[2]->tree;
-    hufftrees[5]=header->dhts->dht_table[3]->tree;
+    huffnode** hufftrees=malloc(2*header->sof->components_number*sizeof(huffnode*));
+    if (header->sof->components_number==1){
+        hufftrees[0]=header->dhts->dht_table[0]->tree;
+        hufftrees[1]=header->dhts->dht_table[1]->tree;
+    } else {
+        for (int i=0;i<2*header->sof->components_number-2;i++){
+        hufftrees[i]=header->dhts->dht_table[i]->tree;
+        }
+        hufftrees[2*header->sof->components_number-2]=header->dhts->dht_table[2*header->sof->components_number-4]->tree;
+        hufftrees[2*header->sof->components_number-1]=header->dhts->dht_table[2*header->sof->components_number-3]->tree;
+    }
     
     uint8_t components_number=header->sof->components_number;
     //printf("COMP: %u\n",components_number);
@@ -103,18 +103,27 @@ int main(int argc,char** argv){
     }*/
     printf("test00 \n");
     printf("\n");
-    iM_LMCU* m_lmcu= create_M_LMCU( lmcu, header->dqts , header->sof->components_number,header->sof);
-        for (uint8_t i = 0; i < 8; i++) {
+
+    M_LMCU* m_lmcu= create_M_LMCU( lmcu, header->dqts , header->sof->components_number,header->sof);
+       /* for (uint8_t i = 0; i < 8; i++) {
                 for (uint8_t j = 0; j < 8; j++) {
         printf(" %x",*(m_lmcu->M_MCUs[1]->LCb[0]->content[i][j]));
 
-    }
+    }*/
     
     printf("\n");
-    }
         for (uint8_t i = 0; i < 8; i++) {
                 for (uint8_t j = 0; j < 8; j++) {
-        printf(" %x ",*(m_lmcu->M_MCUs[0]->LCr[0]->content[i][j]));
+        printf(" %x ",*(m_lmcu->M_MCUs[1500]->LY[0]->content[i][j]));
+
+    }
+    printf("\n");
+    }
+
+    iM_LMCU* im_lmcu=create_iM_LMCU(m_lmcu,header->sof);
+     for (uint8_t i = 0; i < 8; i++) {
+                for (uint8_t j = 0; j < 8; j++) {
+        printf(" %x ",*(im_lmcu->iM_MCUs[1500]->LY[0]->content[i][j]));
 
     }
     printf("\n");

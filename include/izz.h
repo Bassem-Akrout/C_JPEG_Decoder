@@ -17,12 +17,12 @@ typedef struct M_MCU{
     //uint8_t S
 } M_MCU;
 
-typedef struct iM_LMCU{
+typedef struct M_LMCU{
     M_MCU** M_MCUs;
     uint8_t* order_list;
     uint8_t* occurrence_list;
     uint32_t MCU_counter;
-} iM_LMCU;
+} M_LMCU;
 
 /*FONCTIONS*/
 extern void zz_inverse(int16_t*** mat_zz_inverse,int16_t** tab_freq,struct DQT* dqt_table);

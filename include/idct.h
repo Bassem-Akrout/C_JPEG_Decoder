@@ -27,7 +27,7 @@ typedef struct iM_LMCU{
 
 /*FONCTIONS*/
 
-extern uint8_t S(int x,int y,int16_t*** tab_freq);
+extern uint8_t S(uint8_t x,uint8_t y,int16_t*** tab_freq);
 extern void idct(uint8_t*** out,int16_t*** tab_freq);
 extern void create_iM_block(iM_block* new_iM_Block, M_block*  M_block);
 

@@ -60,7 +60,7 @@ void create_iM_block(iM_block* new_iM_Block, M_block*  M_block){
             new_iM_Block->content[i][j]=calloc(8,sizeof(uint8_t));
         }
     }
-    idct(new_iM_Block->content,M_Block->content);
+    idct(new_iM_Block->content,M_block->content);
     free(M_block->content);
     free(M_block);
 }
