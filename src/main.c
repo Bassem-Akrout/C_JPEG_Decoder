@@ -12,6 +12,7 @@
 #include "../include/treatment.h"
 #include "../include/toRGB.h"
 #include "../include/decoded_image_creator.h"
+#include "../include/upsample.h"
 
 
 int main(int argc,char** argv){
@@ -93,7 +94,10 @@ int main(int argc,char** argv){
 
     
     // UPSAMPLING
+    iM_LMCU* result;
+    if (components_number==3){result= up_sample(im_lmcu,header->sof);}
 
+    
     printf("UPSAMPING MISSING !\n");
     printf("\n");
 
@@ -122,13 +126,13 @@ int main(int argc,char** argv){
 
     else {
 
-        uint8_t*** MCUs_RGB=malloc(im_lmcu->MCU_counter*sizeof(uint8_t**));
-        for (uint32_t i=0;i<im_lmcu->MCU_counter;i++){
-            uint8_t** MCU_RGB=malloc(64*sizeof(uint8_t*));
+        uint8_t*** MCUs_RGB=malloc(result->MCU_counter*sizeof(uint8_t**));
+        for (uint32_t i=0;i<result->MCU_counter;i++){
+            uint8_t** MCU_RGB=malloc(191*sizeof(uint8_t*));
             for (int j=0;j<64;j++){
                     MCU_RGB[j]=malloc(3*sizeof(uint8_t));
             }
-            one_YCbCr_mcu_to_rgb(im_lmcu->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
+            one_YCbCr_mcu_to_rgb(result->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
             MCUs_RGB[i]=MCU_RGB;
         }
         printf("RGB CONVERSION DONE !\n");
