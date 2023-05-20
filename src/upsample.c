@@ -4,9 +4,9 @@
 
 /* THIS FUNCTION UPSAMPLES AN MCU: BY DUPLICATION ! */
 
-void upsample_mcu(struct MCU* mcu,uint8_t* hv/* SAMPLING FACTORS */){
+/*void upsample_mcu(struct MCU* mcu,uint8_t* hv/* SAMPLING FACTORS ){
     if (hv[0]*hv[1]==hv[2]*hv[3]==hv[4]*hv[5]){
-        /* NO NEED TO UPSAMPLE BECAUSE THERE WAS NO DOWNSAMPLING */
+         NO NEED TO UPSAMPLE BECAUSE THERE WAS NO DOWNSAMPLING 
         return;
     }
     else {
@@ -21,3 +21,4 @@ void upsample_mcu(struct MCU* mcu,uint8_t* hv/* SAMPLING FACTORS */){
     
 
 
+*/
