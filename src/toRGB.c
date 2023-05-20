@@ -18,13 +18,13 @@ void one_YCbCr_mcu_to_rgb(iM_MCU* iM_MCU,uint8_t** mcu_rgb,uint32_t nb_horz_bloc
     for (uint32_t i=0;i<nb_blocks;i++){
         for (uint32_t j=0;j<8;j++){
             for (uint32_t k=0;k<8;k++){
-            R = *(iM_MCU->LY[i]->content)[j][k] - 0.0009267 * (*(iM_MCU->LCb[i]->content)[j][k] - 128) + 1.4016868 * (*(iM_MCU->LCr[i]->content)[j][k] - 128);
-            G = *(iM_MCU->LY[i]->content)[j][k] - 0.3436954 * (*(iM_MCU->LCb[i]->content)[j][k] - 128) - 0.7141690 * (*(iM_MCU->LCr[i]->content)[j][k] - 128);
-            B = *(iM_MCU->LY[i]->content)[j][k] + 1.7721604 * (*(iM_MCU->LCb[i]->content)[j][k] - 128) + 0.0009902 * (*(iM_MCU->LCr[i]->content)[j][k] - 128);
-        
-            mcu_rgb[i*64 + j*8 + k][0]=SATURATED(R) ;
-            mcu_rgb[i*64 + j*8 + k][1]=SATURATED(G) ; 
-            mcu_rgb[i*64 + j*8 + k][2]=SATURATED(B) ;
+                R = *(iM_MCU->LY[i]->content)[j][k] - 0.0009267 * (*(iM_MCU->LCb[i]->content)[j][k] - 128) + 1.4016868 * (*(iM_MCU->LCr[i]->content)[j][k] - 128);
+                G = *(iM_MCU->LY[i]->content)[j][k] - 0.3436954 * (*(iM_MCU->LCb[i]->content)[j][k] - 128) - 0.7141690 * (*(iM_MCU->LCr[i]->content)[j][k] - 128);
+                B = *(iM_MCU->LY[i]->content)[j][k] + 1.7721604 * (*(iM_MCU->LCb[i]->content)[j][k] - 128) + 0.0009902 * (*(iM_MCU->LCr[i]->content)[j][k] - 128);
+            
+                mcu_rgb[i*64 + j*8 + k][0]=SATURATED(R) ;
+                mcu_rgb[i*64 + j*8 + k][1]=SATURATED(G) ; 
+                mcu_rgb[i*64 + j*8 + k][2]=SATURATED(B) ;
     
             }
         }
