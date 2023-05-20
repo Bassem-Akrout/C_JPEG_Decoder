@@ -8,6 +8,6 @@
 extern void blackandwhite(uint8_t** MCUs_RGB,struct SOF* sof,char* jpeg_name);
 
     // FOR PPM
-extern void rainbow(struct SOF* sof,char* jpeg_name);
+extern void rainbow(uint8_t*** MCU_RGB,struct SOF* sof,char* jpeg_name);
 
 #endif /*_DECODE_IMAGE_CREATOR_H_*/

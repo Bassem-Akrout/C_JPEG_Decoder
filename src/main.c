@@ -91,9 +91,6 @@ int main(int argc,char** argv){
     printf("IDCT DONE !\n");
     printf("\n");
 
-        for (int i=0;i<8;i++)
-        for (int j=0;j<8;j++)
-            printf("RGB : %02x\n",*(im_lmcu->iM_MCUs[2000]->LY[0]->content)[i][j]);
     
     // UPSAMPLING
 
@@ -107,26 +104,46 @@ int main(int argc,char** argv){
     uint32_t vertical_blocks_in_mcu=header->sof->sampling_vertical[0];
             
             // LIST OF RGB_MCUs
+    if (components_number==1){
 
-    uint8_t** MCUs_RGB=malloc(im_lmcu->MCU_counter*sizeof(uint8_t*));
+        uint8_t** MCUs_RGB=malloc(im_lmcu->MCU_counter*sizeof(uint8_t*));
+        for (uint32_t i=0;i<im_lmcu->MCU_counter;i++){
+            uint8_t* MCU_RGB=malloc(64*sizeof(uint8_t));
+            one_Y_mcu_to_rgb(im_lmcu->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
+            MCUs_RGB[i]=MCU_RGB;
+        }
+        printf("RGB CONVERSION DONE !\n");
+        printf("\n");
+        //PGM CREATION (for now) 
+        printf("LAST STEP ! CREATING MAGICAL IMAGE\n");
+        blackandwhite(MCUs_RGB,header->sof,argv[1]);
 
-    for (uint32_t i=0;i<im_lmcu->MCU_counter;i++){
-        uint8_t* MCU_RGB=malloc(64*sizeof(uint8_t));
-        one_Y_mcu_to_rgb(im_lmcu->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
-        MCUs_RGB[i]=MCU_RGB;
     }
 
-    printf("RGB CONVERSION DONE !\n");
-    printf("\n");
+    else {
 
-    //PGM CREATION (for now) 
-    printf("LAST STEP ! CREATING MAGICAL IMAGE\n");
-    if (components_number==1)
-        blackandwhite(MCUs_RGB,header->sof,argv[1]);
+        uint8_t*** MCUs_RGB=malloc(im_lmcu->MCU_counter*sizeof(uint8_t**));
+        for (uint32_t i=0;i<im_lmcu->MCU_counter;i++){
+            uint8_t** MCU_RGB=malloc(64*sizeof(uint8_t*));
+            for (int j=0;j<64;j++){
+                    MCU_RGB[j]=malloc(3*sizeof(uint8_t));
+            }
+            one_YCbCr_mcu_to_rgb(im_lmcu->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
+            MCUs_RGB[i]=MCU_RGB;
+        }
+        printf("RGB CONVERSION DONE !\n");
+        printf("\n");
+        printf("LAST STEP ! CREATING MAGICAL IMAGE\n");
+        rainbow(MCUs_RGB,header->sof,argv[1]);
+
+    }
+
+   
+
+    
     printf("JPEG DECOMPRESSION SUCCESSFUL ! THANKS FOR TRUSTING OUR TOOL\n");
     printf("\n");
-        /*else rainbow();*/
-
+        
     free_header(header);
     return EXIT_SUCCESS;
     //free MCU_lis;

@@ -11,9 +11,9 @@ uint8_t SATURATED(float val){
     else return  floor(val);
 }
 
-void one_YCbCr_mcu_to_rgb(iM_MCU* iM_MCU,uint8_t** mcu_rgb,uint8_t nb_horz_blocks_in_mcu,uint8_t nb_vertical_blocks_in_mcu){
+void one_YCbCr_mcu_to_rgb(iM_MCU* iM_MCU,uint8_t** mcu_rgb,uint32_t nb_horz_blocks_in_mcu,uint32_t nb_vertical_blocks_in_mcu){
     
-    int nb_blocks=nb_horz_blocks_in_mcu*nb_vertical_blocks_in_mcu;
+    uint32_t nb_blocks=nb_horz_blocks_in_mcu*nb_vertical_blocks_in_mcu;
     float R,G,B;
     for (uint32_t i=0;i<nb_blocks;i++){
         for (uint32_t j=0;j<8;j++){
