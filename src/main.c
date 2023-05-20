@@ -93,9 +93,12 @@ int main(int argc,char** argv){
     printf("\n");
 
     
+    
     // UPSAMPLING
     iM_LMCU* result;
-    if (components_number==3){result= up_sample(im_lmcu,header->sof);}
+    if (components_number==3){
+        result= up_sample(im_lmcu,header->sof);
+    }
 
     
     printf("UPSAMPING MISSING !\n");
@@ -128,8 +131,8 @@ int main(int argc,char** argv){
 
         uint8_t*** MCUs_RGB=malloc(result->MCU_counter*sizeof(uint8_t**));
         for (uint32_t i=0;i<result->MCU_counter;i++){
-            uint8_t** MCU_RGB=malloc(191*sizeof(uint8_t*));
-            for (int j=0;j<64;j++){
+            uint8_t** MCU_RGB=malloc(horizontal_blocks_in_mcu*vertical_blocks_in_mcu*64*sizeof(uint8_t*));
+            for (uint32_t j=0;j<horizontal_blocks_in_mcu*vertical_blocks_in_mcu*64;j++){
                     MCU_RGB[j]=malloc(3*sizeof(uint8_t));
             }
             one_YCbCr_mcu_to_rgb(result->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
