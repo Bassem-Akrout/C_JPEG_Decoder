@@ -16,7 +16,11 @@ void modi_mcu(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t* S_fact ){
     up_samp_im_mcu->LY=old_im_mcu->LY;
 
     if (S_fact[2]==1 && S_fact[3]==1  ){
-        if ((S_fact[0]==2 && S_fact[1]==1)||(S_fact[0]==1 && S_fact[1]==2)){
+        if(S_fact[0]== && S_fact[1]==1){
+            up_samp_im_mcu->LCb=old_im_mcu->LCb;//not sure this works
+            up_samp_im_mcu->LCr=old_im_mcu->LCr;
+        }
+        else if ((S_fact[0]==2 && S_fact[1]==1)||(S_fact[0]==1 && S_fact[1]==2)){
             up_samp_im_mcu->LCb[0]=old_im_mcu->LCb[0];
             up_samp_im_mcu->LCb[1]=old_im_mcu->LCb[0];
             up_samp_im_mcu->LCr[0]=old_im_mcu->LCr[0];
