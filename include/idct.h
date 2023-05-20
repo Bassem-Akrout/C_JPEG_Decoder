@@ -1,6 +1,7 @@
 #ifndef _IDCT_H_
 #define _IDCT_H_
 #include <stdint.h>
+#include "izz.h"
 
 
 //after inverse_discrete_cosinus_transformation
