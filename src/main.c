@@ -101,8 +101,10 @@ int main(int argc,char** argv){
     }
 
     
-    printf("UPSAMPING MISSING !\n");
+    printf("UPSAMPING SUCCESSFUL  !\n");
     printf("\n");
+
+    
 
     // RGB TRANSFORMATION
 
@@ -137,7 +139,9 @@ int main(int argc,char** argv){
             }
             one_YCbCr_mcu_to_rgb(result->iM_MCUs[i],MCU_RGB,horizontal_blocks_in_mcu,vertical_blocks_in_mcu);
             MCUs_RGB[i]=MCU_RGB;
+            
         }
+        printf("\n");
         printf("RGB CONVERSION DONE !\n");
         printf("\n");
         printf("LAST STEP ! CREATING MAGICAL IMAGE\n");
