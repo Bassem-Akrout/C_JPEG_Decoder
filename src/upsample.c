@@ -57,10 +57,7 @@ void vertical_duplication(iM_block* initial,iM_block* upper_block, iM_block* low
 
 
 void modi_mcu(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t* S_fact ){
-
-
-
-
+/*missing cases: h,v >4*/
     up_samp_im_mcu->LY=old_im_mcu->LY;
     if (S_fact[2]==1 && S_fact[3]==1){
         if(S_fact[0]==1 && S_fact[1]==1){
@@ -98,20 +95,7 @@ void modi_mcu(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t* S_fact ){
             vertical_duplication(old_im_mcu->LCb[0],upper_Cb_block,lower_Cb_block);
             vertical_duplication(old_im_mcu->LCr[0],upper_Cr_block,lower_Cr_block);
 
-            /*for(int i=0;i<8;i++){
-                for(int j=0;j<8;j++){
-                    printf("%02x /",*(upper_Cb_block->content[i][j]));
-                }
 
-            }
-            printf("\n");
-            for(int i=0;i<8;i++){
-                for(int j=0;j<8;j++){
-                    printf("%02x /",*(lower_Cb_block->content[i][j]));
-                }
-            }
-            printf("\n");
-            printf("\n");*/
             up_samp_im_mcu->LCb[0]=upper_Cb_block;
             up_samp_im_mcu->LCb[1]=lower_Cb_block;
             up_samp_im_mcu->LCr[0]=upper_Cr_block;
