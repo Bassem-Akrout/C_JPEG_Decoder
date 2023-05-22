@@ -46,8 +46,7 @@ void blackandwhite(uint8_t** MCUs_RGB,struct SOF* sof,char* jpeg_name){
         else{jmax=8;}
             for (int j = 0; j < jmax; j++)
                 for (uint32_t i = 0; i < MCU_hori_number ;i++){
-                if (i==MCU_hori_number-1){kmax=sof->width%8;}
-                else{kmax=8;}
+                if (i==MCU_hori_number-1){kmax=sof->width%8;}else{kmax=8;}
                     for (int k = 0; k < kmax;k++)
                         fwrite(&(MCUs_RGB[i+l*(MCU_hori_number)][j*8+k]),sizeof(uint8_t),1,new_image);}
             }
@@ -79,9 +78,45 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
     
 
 // PARTIE ENTIÈRE NOMBRE DES MCUS : sof->height/sof->sampling_vertical[0]*8 .. 
+    uint32_t MCU_hori_number =(1+(uint32_t)ceil(sof->width/(sof->sampling_horizontal[0]*8)));
+    uint32_t MCU_vertical_number=(1+(uint32_t)ceil(sof->height/(sof->sampling_vertical[0]*8)));
+    uint8_t jmax;
+    uint8_t kmax;
+    
+    if((ceil(sof->width/(sof->sampling_horizontal[0]*8)))!=((double)(sof->width)/(double)((sof->sampling_horizontal[0]*8))) || 
+    (ceil(sof->height/(sof->sampling_vertical[0]*8)))!=((double)(sof->height)/(double)((sof->sampling_vertical[0]*8)))){
+        for (uint32_t l=0;l<MCU_vertical_number;l++){
+            if (l==MCU_vertical_number-1){jmax=sof->height%(8*sof->sampling_vertical[0]);}else{jmax=sof->sampling_vertical[0]*8;}
+                for (int j = 0; j < jmax; j++)
+                    for (uint32_t i = 0; i < MCU_hori_number ;i++){
+                        if (i==MCU_hori_number-1){kmax=sof->width%(8*sof->sampling_horizontal[0]);}else{kmax=sof->sampling_horizontal[0]*8;}
+                        for (int m=0;m<sof->sampling_horizontal[0];m++){
+                            for (int k = m*sof->sampling_vertical[0]*64; k < m*sof->sampling_vertical[0]*64+sof->sampling_vertical[0]*kmax;k++)
+                                {
+                                fwrite(&(MCUs_RGB[i+l*MCU_hori_number][j*jmax+k][0]),sizeof(uint8_t),1,new_image);
+                                fwrite(&(MCUs_RGB[i+l*MCU_hori_number][j*jmax+k][1]),sizeof(uint8_t),1,new_image);
+                                fwrite(&(MCUs_RGB[i+l*MCU_hori_number][j*jmax+k][2]),sizeof(uint8_t),1,new_image);
+                            }
+                        }
+                    }
+                }
+        }
+    else{
+        printf("YES\n");
+        for (uint32_t l=0;l<MCU_vertical_number-1;l++)
+            for (int j = 0; j < sof->sampling_vertical[0]*8; j++)
+                for (uint32_t i = 0; i < MCU_hori_number -1;i++)
+                    for (int m=0;m<sof->sampling_horizontal[0];m++){
+		            for (int k = m*sof->sampling_vertical[0]*64; k < m*sof->sampling_vertical[0]*64+sof->sampling_vertical[0]*8;k++){
+                        fwrite(&(MCUs_RGB[i+l*(MCU_hori_number-1)][j*8+k][0]),sizeof(uint8_t),1,new_image);
+                        fwrite(&(MCUs_RGB[i+l*(MCU_hori_number-1)][j*8+k][1]),sizeof(uint8_t),1,new_image);
+                        fwrite(&(MCUs_RGB[i+l*(MCU_hori_number-1)][j*8+k][2]),sizeof(uint8_t),1,new_image);
+                    }
+                    }
+    }
 
 
-    for (uint32_t l=0;l<floor(sof->height/(sof->sampling_vertical[0]*8));l++)
+    /*for (uint32_t l=0;l<floor(sof->height/(sof->sampling_vertical[0]*8));l++)
         for (int j = 0; j < sof->sampling_vertical[0]*8; j++)
             for (uint32_t i = 0; i < floor(sof->width/(sof->sampling_horizontal[0]*8));i++){
                 for (int m=0;m<sof->sampling_horizontal[0];m++){
@@ -92,7 +127,7 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                         fwrite(&(MCUs_RGB[i+l*(uint32_t)sof->width/(sof->sampling_horizontal[0]*8)][j*8+k][2]),sizeof(uint8_t),1,new_image);
                     }
 
-                }
+                }*/
 }
-}
+
 
