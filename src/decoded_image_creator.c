@@ -191,8 +191,64 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                     }
             }    
         }
+    else if((sof->sampling_horizontal[0]==3 && sof->sampling_vertical[0]==2) ){
+        //case of h,v == 3,2
+        for (uint32_t l=0;l<MCU_vertical_number;l++){
+        if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
+        else{jmax=sof->sampling_vertical[0]*8;}
+            for (int j = 0; j < jmax; j++)
+            for (uint32_t i=0;i<MCU_hori_number;i++)
+                {if (i==MCU_hori_number-1){kmax=(sof->width)%(8*sof->sampling_horizontal[0]);}
+                else{kmax=sof->sampling_horizontal[0]*8;}
+                        for (int k = 0; k <kmax;k++){
+                            /* m indicates the bloc
+                            0 1 2
+                            3 4 5
+                            */
+                            if      ((k<=15 && k>=8 ) &&j<=7 ){m=1;}
+                            else if ((k<=23 && k>=16) &&j<=7 ){m=2;}
+                            else if ((k<=7          ) &&j<=7 ){m=0;}
+                            else if ((k<=15 && k>=8 ) &&j>7 ){m=4;}
+                            else if ((k<=23 && k>=16) &&j>7 ){m=5;}
+                            else{m=3;}
+                            fwrite(&(MCUs_RGB[i+l*(real_MCU_hori_number)][m*64+(j%8)*8+(k%8)][0]),sizeof(uint8_t),1,new_image);
+                            fwrite(&(MCUs_RGB[i+l*(real_MCU_hori_number)][m*64+(j%8)*8+(k%8)][1]),sizeof(uint8_t),1,new_image);
+                            fwrite(&(MCUs_RGB[i+l*(real_MCU_hori_number)][m*64+(j%8)*8+(k%8)][2]),sizeof(uint8_t),1,new_image);
+                            }
+                    }
+            }  
+    }
+    else if((sof->sampling_horizontal[0]==2 && sof->sampling_vertical[0]==3) ){
+        //case of h,v== 2,3
+        for (uint32_t l=0;l<MCU_vertical_number;l++){
+        if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
+        else{jmax=sof->sampling_vertical[0]*8;}
+            for (int j = 0; j < jmax; j++)
+            for (uint32_t i=0;i<MCU_hori_number;i++)
+                {if (i==MCU_hori_number-1){kmax=(sof->width)%(8*sof->sampling_horizontal[0]);}
+                else{kmax=sof->sampling_horizontal[0]*8;}
+                        for (int k = 0; k <kmax;k++){
+                            /* m indicates the bloc
+                            0 1 
+                            2 3
+                            4 5 
+                            
+                            */
+                            if      ((j<=15 && j>=8 ) &&k<=7 ){m=2;}
+                            else if ((j<=23 && j>=16) &&k<=7 ){m=4;}
+                            else if ((j<=7          ) &&k<=7 ){m=0;}
+                            else if ((j<=15 && j>=8 ) &&k>7 ) {m=3;}
+                            else if ((j<=23 && j>=16) &&k>7 ) {m=5;}
+                            else{m=1;}
+                            fwrite(&(MCUs_RGB[i+l*(real_MCU_hori_number)][m*64+(j%8)*8+(k%8)][0]),sizeof(uint8_t),1,new_image);
+                            fwrite(&(MCUs_RGB[i+l*(real_MCU_hori_number)][m*64+(j%8)*8+(k%8)][1]),sizeof(uint8_t),1,new_image);
+                            fwrite(&(MCUs_RGB[i+l*(real_MCU_hori_number)][m*64+(j%8)*8+(k%8)][2]),sizeof(uint8_t),1,new_image);
+                            }
+                    }
+            }   
+    }
     else{
-        printf("CASE NOT TREATED type 2:");
+        printf("\n \n \n CASE NOT TREATED UP_SAPMLE: \n \n \n ");
         printf("%ux%u %ux%u %ux%u \n",sof->sampling_horizontal[0],sof->sampling_vertical[0],sof->sampling_horizontal[1],sof->sampling_vertical[1],sof->sampling_horizontal[2],sof->sampling_vertical[2]);        
         }
 }

@@ -5,7 +5,6 @@
 #include "../include/jpeg_reader.h"
 
 
-/* THIS FUNCTION UPSAMPLES AN MCU: BY DUPLICATION ! */
 void horizontal_duplication(iM_block* initial,iM_block* left_block, iM_block* right_block){
 
     left_block->content = calloc(8,sizeof(uint8_t**));
@@ -227,166 +226,102 @@ void one_to_four_horizontal_duplication(iM_block* initial,iM_block* left_block,i
     }
 }
 
-void modi_LCb(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t h, uint8_t v ){
-
-}
-void modi_mcu(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t* S_fact ){
-//does the up_sampling step taking into consideration stocked in S_fact like this {h1,v1,h2,v2,h3,v3}
-    up_samp_im_mcu->LY=old_im_mcu->LY;
-    if (S_fact[2]==1 && S_fact[3]==1){
-        if      (S_fact[0]==1 && S_fact[1]==1){
-            up_samp_im_mcu->LCb=old_im_mcu->LCb;
-            up_samp_im_mcu->LCr=old_im_mcu->LCr;
+void modi_LCb(iM_block** LC ,iM_block** LCr,uint8_t h, uint8_t v,uint8_t h0, uint8_t v0 ){
+    if (h==1 && v==1){
+        if      (h0==1 && v0==1){
+            LCr=LC;
 
         }
-        else if ((S_fact[0]==2 && S_fact[1]==1)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
+        else if ((h0==2 && v0==1)){
             iM_block* left_Cb_block =malloc(sizeof(iM_block));
             iM_block* right_Cb_block=malloc(sizeof(iM_block));
-            iM_block* left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* right_Cr_block=malloc(sizeof(iM_block));
-            horizontal_duplication(old_im_mcu->LCb[0],left_Cb_block,right_Cb_block);
-            horizontal_duplication(old_im_mcu->LCr[0],left_Cr_block,right_Cr_block);
 
-            up_samp_im_mcu->LCb[0]=left_Cb_block;
-            up_samp_im_mcu->LCb[1]=right_Cb_block;
-            up_samp_im_mcu->LCr[0]=left_Cr_block;
-            up_samp_im_mcu->LCr[1]=right_Cr_block;
+            horizontal_duplication(LC[0],left_Cb_block,right_Cb_block);
+
+            LCr[0]=left_Cb_block;
+            LCr[1]=right_Cb_block;
+            //free all old
+
+
+       
+        }
+        else if ((h0==1 && v0==2)){
+            iM_block* upper_Cb_block =malloc(sizeof(iM_block));
+            iM_block* lower_Cb_block=malloc(sizeof(iM_block));
+
+            vertical_duplication(LC[0],upper_Cb_block,lower_Cb_block);
+
+
+            LCr[0]=upper_Cb_block;
+            LCr[1]=lower_Cb_block;
+
             //free all old
 
        
         }
-        else if ((S_fact[0]==1 && S_fact[1]==2)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
-            iM_block* upper_Cb_block =malloc(sizeof(iM_block));
-            iM_block* lower_Cb_block=malloc(sizeof(iM_block));
-            iM_block* upper_Cr_block =malloc(sizeof(iM_block));
-            iM_block* lower_Cr_block=malloc(sizeof(iM_block));
-            vertical_duplication(old_im_mcu->LCb[0],upper_Cb_block,lower_Cb_block);
-            vertical_duplication(old_im_mcu->LCr[0],upper_Cr_block,lower_Cr_block);
-
-
-            up_samp_im_mcu->LCb[0]=upper_Cb_block;
-            up_samp_im_mcu->LCb[1]=lower_Cb_block;
-            up_samp_im_mcu->LCr[0]=upper_Cr_block;
-            up_samp_im_mcu->LCr[1]=lower_Cr_block;
-        //free all old
-
-       
-        }
-        else if ((S_fact[0]==1 && S_fact[1]==4)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
+        else if ((h0==1 && v0==4)){
             iM_block* upper_Cb_Block=malloc(sizeof(iM_block));
             iM_block* upper_mid_Cb_Block=malloc(sizeof(iM_block));
             iM_block* lower_mid_Cb_Block=malloc(sizeof(iM_block));
             iM_block* lower_Cb_Block=malloc(sizeof(iM_block));
 
-            iM_block* upper_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* upper_mid_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* lower_mid_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* lower_Cr_Block=malloc(sizeof(iM_block));
 
-            one_to_four_vertical_duplication(old_im_mcu->LCb[0],upper_Cb_Block, upper_mid_Cb_Block, lower_mid_Cb_Block,  lower_Cb_Block);
-            one_to_four_vertical_duplication(old_im_mcu->LCr[0],upper_Cr_Block, upper_mid_Cr_Block, lower_mid_Cr_Block,  lower_Cr_Block);
+            one_to_four_vertical_duplication(LC[0],upper_Cb_Block, upper_mid_Cb_Block, lower_mid_Cb_Block,  lower_Cb_Block);
 
-            up_samp_im_mcu->LCb[0]=upper_Cb_Block;
-            up_samp_im_mcu->LCb[1]=upper_mid_Cb_Block;
-            up_samp_im_mcu->LCb[2]=lower_mid_Cb_Block;
-            up_samp_im_mcu->LCb[3]=lower_Cb_Block;
+            LCr[0]=upper_Cb_Block;
+            LCr[1]=upper_mid_Cb_Block;
+            LCr[2]=lower_mid_Cb_Block;
+            LCr[3]=lower_Cb_Block;
 
-            up_samp_im_mcu->LCr[0]=upper_Cr_Block;
-            up_samp_im_mcu->LCr[1]=upper_mid_Cr_Block;
-            up_samp_im_mcu->LCr[2]=lower_mid_Cr_Block;
-            up_samp_im_mcu->LCr[3]=lower_Cr_Block;
-
+            //free all old
         }
-        else if ((S_fact[0]==4 && S_fact[1]==1)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
+        else if ((h0==4 && v0==1)){
             iM_block* left_Cb_Block=malloc(sizeof(iM_block));
             iM_block* mid_left_Cb_Block=malloc(sizeof(iM_block));
             iM_block* mid_right_Cb_Block=malloc(sizeof(iM_block));
             iM_block* right_Cb_Block=malloc(sizeof(iM_block));
 
-            iM_block* left_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* mid_left_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* mid_right_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* right_Cr_Block=malloc(sizeof(iM_block));
+            one_to_four_horizontal_duplication( LC[0], left_Cb_Block,mid_left_Cb_Block, mid_right_Cb_Block,  right_Cb_Block);
 
-            one_to_four_horizontal_duplication( old_im_mcu->LCb[0], left_Cb_Block,mid_left_Cb_Block, mid_right_Cb_Block,  right_Cb_Block);
-            one_to_four_horizontal_duplication( old_im_mcu->LCr[0], left_Cr_Block,mid_left_Cr_Block, mid_right_Cr_Block,  right_Cr_Block);
-
-            up_samp_im_mcu->LCb[0]=left_Cb_Block;
-            up_samp_im_mcu->LCb[1]=mid_left_Cb_Block;
-            up_samp_im_mcu->LCb[2]=mid_right_Cb_Block;
-            up_samp_im_mcu->LCb[3]=right_Cb_Block;
-
-            up_samp_im_mcu->LCr[0]=left_Cr_Block;
-            up_samp_im_mcu->LCr[1]=mid_left_Cr_Block;
-            up_samp_im_mcu->LCr[2]=mid_right_Cr_Block;
-            up_samp_im_mcu->LCr[3]=right_Cr_Block;
+            LCr[0]=left_Cb_Block;
+            LCr[1]=mid_left_Cb_Block;
+            LCr[2]=mid_right_Cb_Block;
+            LCr[3]=right_Cb_Block;
 
         }
-        else if ((S_fact[0]==2 && S_fact[1]==2)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
+        else if ((h0==2 && v0==2)){
             iM_block* upper_left_Cb_block =malloc(sizeof(iM_block));
             iM_block* upper_right_Cb_block=malloc(sizeof(iM_block));
             iM_block* lower_left_Cb_block =malloc(sizeof(iM_block));
             iM_block* lower_right_Cb_block=malloc(sizeof(iM_block));  
 
-            iM_block* upper_left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* upper_right_Cr_block=malloc(sizeof(iM_block));
-            iM_block* lower_left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* lower_right_Cr_block=malloc(sizeof(iM_block));
+
             
             //temporary
             iM_block* left_Cb_block =malloc(sizeof(iM_block));
             iM_block* right_Cb_block=malloc(sizeof(iM_block)); 
-            iM_block* left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* right_Cr_block=malloc(sizeof(iM_block)); 
 
 
 
             //one hori then two verti
-            horizontal_duplication(old_im_mcu->LCb[0],left_Cb_block,right_Cb_block);
-            horizontal_duplication(old_im_mcu->LCr[0],left_Cr_block,right_Cr_block);
+            horizontal_duplication(LC[0],left_Cb_block,right_Cb_block);
 
             vertical_duplication(left_Cb_block, upper_left_Cb_block ,lower_left_Cb_block);
             vertical_duplication(right_Cb_block,upper_right_Cb_block,lower_right_Cb_block);
-
-            vertical_duplication(left_Cr_block, upper_left_Cr_block ,lower_left_Cr_block);
-            vertical_duplication(right_Cr_block,upper_right_Cr_block,lower_right_Cr_block);
             
-            up_samp_im_mcu->LCb[0]=upper_left_Cb_block;
-            up_samp_im_mcu->LCb[1]=upper_right_Cb_block;
-            up_samp_im_mcu->LCb[2]=lower_left_Cb_block;
-            up_samp_im_mcu->LCb[3]=lower_right_Cb_block;   
+            LCr[0]=upper_left_Cb_block;
+            LCr[1]=upper_right_Cb_block;
+            LCr[2]=lower_left_Cb_block;
+            LCr[3]=lower_right_Cb_block;   
 
-            up_samp_im_mcu->LCr[0]=upper_left_Cr_block;
-            up_samp_im_mcu->LCr[1]=upper_right_Cr_block;
-            up_samp_im_mcu->LCr[2]=lower_left_Cr_block;
-            up_samp_im_mcu->LCr[3]=lower_right_Cr_block;
 
             free(left_Cb_block);
             free(right_Cb_block); 
-            free(left_Cr_block);
-            free(right_Cr_block); 
 
-            free(old_im_mcu->LCb);
-            free(old_im_mcu->LCr); //il faut free l'interieur aussi
+            free(LC);
+             //il faut free l'interieur aussi
         }
-        else if ((S_fact[0]==2 && S_fact[1]==4)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
+        else if ((h0==2 && v0==4)){
             //blocs are ordered this way
             /*
             0 1
@@ -403,64 +338,33 @@ void modi_mcu(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t* S_fact ){
             iM_block* Cb_6=malloc(sizeof(iM_block));
             iM_block* Cb_7=malloc(sizeof(iM_block));
 
-            iM_block* Cr_0=malloc(sizeof(iM_block)); 
-            iM_block* Cr_1=malloc(sizeof(iM_block));
-            iM_block* Cr_2=malloc(sizeof(iM_block));
-            iM_block* Cr_3=malloc(sizeof(iM_block));
-            iM_block* Cr_4=malloc(sizeof(iM_block));
-            iM_block* Cr_5=malloc(sizeof(iM_block));
-            iM_block* Cr_6=malloc(sizeof(iM_block));
-            iM_block* Cr_7=malloc(sizeof(iM_block));
-
-
-
-
             //temporary
             iM_block* left_Cb_block =malloc(sizeof(iM_block));
             iM_block* right_Cb_block=malloc(sizeof(iM_block)); 
 
-            iM_block* left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* right_Cr_block=malloc(sizeof(iM_block)); 
-
-            horizontal_duplication(old_im_mcu->LCb[0],left_Cb_block,right_Cb_block);
-            horizontal_duplication(old_im_mcu->LCr[0],left_Cr_block,right_Cr_block);
+            horizontal_duplication(LC[0],left_Cb_block,right_Cb_block);
 
             one_to_four_vertical_duplication(left_Cb_block , Cb_0 ,Cb_2,Cb_4,Cb_6);
-            one_to_four_vertical_duplication(left_Cr_block , Cr_0 ,Cr_2,Cr_4,Cr_6);
             one_to_four_vertical_duplication(right_Cb_block, Cb_1 ,Cb_3,Cb_5,Cb_7);
-            one_to_four_vertical_duplication(right_Cr_block, Cr_1 ,Cr_3,Cr_5,Cr_7);
 
-            up_samp_im_mcu->LCb[0]=Cb_0;
-            up_samp_im_mcu->LCb[1]=Cb_1;
-            up_samp_im_mcu->LCb[2]=Cb_2;
-            up_samp_im_mcu->LCb[3]=Cb_3;
-            up_samp_im_mcu->LCb[4]=Cb_4;
-            up_samp_im_mcu->LCb[5]=Cb_5;
-            up_samp_im_mcu->LCb[6]=Cb_6;
-            up_samp_im_mcu->LCb[7]=Cb_7;
-
-            up_samp_im_mcu->LCr[0]=Cr_0;
-            up_samp_im_mcu->LCr[1]=Cr_1;
-            up_samp_im_mcu->LCr[2]=Cr_2;
-            up_samp_im_mcu->LCr[3]=Cr_3;
-            up_samp_im_mcu->LCr[4]=Cr_4;
-            up_samp_im_mcu->LCr[5]=Cr_5;
-            up_samp_im_mcu->LCr[6]=Cr_6;
-            up_samp_im_mcu->LCr[7]=Cr_7;
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+            LCr[6]=Cb_6;
+            LCr[7]=Cb_7;
 
             free(left_Cb_block);
             free(right_Cb_block); 
-            free(left_Cr_block);
-            free(right_Cr_block); 
 
-            free(old_im_mcu->LCb);
-            free(old_im_mcu->LCr); //il faut free l'interieur aussi
+
+            free(LC); //il faut free l'interieur aussi
     
 
         }
-        else if ((S_fact[0]==4 && S_fact[1]==2)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
+        else if ((h0==4 && v0==2)){
             //blocs are ordered this way
             /*
             0 1 2 3
@@ -476,293 +380,393 @@ void modi_mcu(iM_MCU* old_im_mcu ,iM_MCU* up_samp_im_mcu,uint8_t* S_fact ){
             iM_block* Cb_6=malloc(sizeof(iM_block));
             iM_block* Cb_7=malloc(sizeof(iM_block));
 
-            iM_block* Cr_0=malloc(sizeof(iM_block)); 
-            iM_block* Cr_1=malloc(sizeof(iM_block));
-            iM_block* Cr_2=malloc(sizeof(iM_block));
-            iM_block* Cr_3=malloc(sizeof(iM_block));
-            iM_block* Cr_4=malloc(sizeof(iM_block));
-            iM_block* Cr_5=malloc(sizeof(iM_block));
-            iM_block* Cr_6=malloc(sizeof(iM_block));
-            iM_block* Cr_7=malloc(sizeof(iM_block));
+            //temporary
+            iM_block* upper_Cb_block =malloc(sizeof(iM_block));
+            iM_block* lower_Cb_block=malloc(sizeof(iM_block)); 
 
 
+            vertical_duplication(LC[0],upper_Cb_block,lower_Cb_block);
+
+            one_to_four_horizontal_duplication(upper_Cb_block, Cb_0 ,Cb_1,Cb_2,Cb_3);
+            one_to_four_horizontal_duplication(lower_Cb_block, Cb_4 ,Cb_5,Cb_6,Cb_7);
+
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+            LCr[6]=Cb_6;
+            LCr[7]=Cb_7;
+
+            free(upper_Cb_block);
+            free(lower_Cb_block);
+
+            free(LC);
+            //il faut free l'interieur aussi
+    
+        }
+        else if ((h0==3 && v0==1)){
+            iM_block* left_Cb_block =malloc(sizeof(iM_block));
+            iM_block* mid_Cb_block =malloc(sizeof(iM_block));
+            iM_block* right_Cb_block=malloc(sizeof(iM_block));
+            one_to_three_horizontal_duplication(LC[0],left_Cb_block,mid_Cb_block,right_Cb_block);
+
+            LCr[0]=left_Cb_block;
+            LCr[1]=mid_Cb_block;
+            LCr[2]=right_Cb_block;
+            //free all old
+
+        }
+        else if ((h0==1 && v0==3)){
+            iM_block* upper_Cb_block =malloc(sizeof(iM_block));
+            iM_block* mid_Cb_block =malloc(sizeof(iM_block));
+            iM_block* lower_Cb_block=malloc(sizeof(iM_block));
+
+            one_to_three_vertical_duplication(LC[0],upper_Cb_block,mid_Cb_block,lower_Cb_block);
+
+            LCr[0]=upper_Cb_block;
+            LCr[1]=mid_Cb_block;
+            LCr[2]=lower_Cb_block;
+
+            //free all old
+
+        }
+        else if ((h0==2 && v0==3)){
+            //blocs are ordered this way
+            /*
+            0 1
+            2 3
+            4 5
+            
+            */
+            iM_block* Cb_0=malloc(sizeof(iM_block)); 
+            iM_block* Cb_1=malloc(sizeof(iM_block));
+            iM_block* Cb_2=malloc(sizeof(iM_block));
+            iM_block* Cb_3=malloc(sizeof(iM_block));
+            iM_block* Cb_4=malloc(sizeof(iM_block));
+            iM_block* Cb_5=malloc(sizeof(iM_block));
+
+
+            //temporary
+            iM_block* left_Cb_block =malloc(sizeof(iM_block));
+            iM_block* right_Cb_block=malloc(sizeof(iM_block)); 
+
+            horizontal_duplication(LC[0],left_Cb_block,right_Cb_block);
+
+            one_to_three_vertical_duplication(left_Cb_block , Cb_0 ,Cb_2,Cb_4);
+            one_to_three_vertical_duplication(right_Cb_block, Cb_1 ,Cb_3,Cb_5);
+
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+
+
+            free(left_Cb_block);
+            free(right_Cb_block); 
+
+
+            free(LC); //il faut free l'interieur aussi
+        }
+        else if ((h0==3 && v0==2)){
+            //blocs are ordered this way
+            /*
+            0 1 2 
+            3 4 5              
+            */
+
+            iM_block* Cb_0=malloc(sizeof(iM_block)); 
+            iM_block* Cb_1=malloc(sizeof(iM_block));
+            iM_block* Cb_2=malloc(sizeof(iM_block));
+            iM_block* Cb_3=malloc(sizeof(iM_block));
+            iM_block* Cb_4=malloc(sizeof(iM_block));
+            iM_block* Cb_5=malloc(sizeof(iM_block));
 
 
             //temporary
             iM_block* upper_Cb_block =malloc(sizeof(iM_block));
             iM_block* lower_Cb_block=malloc(sizeof(iM_block)); 
 
-            iM_block* upper_Cr_block =malloc(sizeof(iM_block));
-            iM_block* lower_Cr_block=malloc(sizeof(iM_block)); 
 
-            vertical_duplication(old_im_mcu->LCb[0],upper_Cb_block,lower_Cb_block);
-            vertical_duplication(old_im_mcu->LCr[0],upper_Cr_block,lower_Cr_block);
+            vertical_duplication(LC[0],upper_Cb_block,lower_Cb_block);
 
-            one_to_four_horizontal_duplication(upper_Cb_block, Cb_0 ,Cb_1,Cb_2,Cb_3);
-            one_to_four_horizontal_duplication(upper_Cr_block, Cr_0 ,Cr_1,Cr_2,Cr_3);
-            one_to_four_horizontal_duplication(lower_Cb_block, Cb_4 ,Cb_5,Cb_6,Cb_7);
-            one_to_four_horizontal_duplication(lower_Cr_block, Cr_4 ,Cr_5,Cr_6,Cr_7);
+            one_to_three_horizontal_duplication(upper_Cb_block, Cb_0 ,Cb_1,Cb_2);
+            one_to_three_horizontal_duplication(lower_Cb_block, Cb_3 ,Cb_4,Cb_5);
 
-            up_samp_im_mcu->LCb[0]=Cb_0;
-            up_samp_im_mcu->LCb[1]=Cb_1;
-            up_samp_im_mcu->LCb[2]=Cb_2;
-            up_samp_im_mcu->LCb[3]=Cb_3;
-            up_samp_im_mcu->LCb[4]=Cb_4;
-            up_samp_im_mcu->LCb[5]=Cb_5;
-            up_samp_im_mcu->LCb[6]=Cb_6;
-            up_samp_im_mcu->LCb[7]=Cb_7;
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
 
-            up_samp_im_mcu->LCr[0]=Cr_0;
-            up_samp_im_mcu->LCr[1]=Cr_1;
-            up_samp_im_mcu->LCr[2]=Cr_2;
-            up_samp_im_mcu->LCr[3]=Cr_3;
-            up_samp_im_mcu->LCr[4]=Cr_4;
-            up_samp_im_mcu->LCr[5]=Cr_5;
-            up_samp_im_mcu->LCr[6]=Cr_6;
-            up_samp_im_mcu->LCr[7]=Cr_7;
 
             free(upper_Cb_block);
-            free(upper_Cr_block); 
             free(lower_Cb_block);
-            free(lower_Cr_block); 
 
-            free(old_im_mcu->LCb);
-            free(old_im_mcu->LCr); //il faut free l'interieur aussi
-    
-        }
-        else if ((S_fact[0]==3 && S_fact[1]==1)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
-            iM_block* left_Cb_block =malloc(sizeof(iM_block));
-            iM_block* mid_Cb_block =malloc(sizeof(iM_block));
-            iM_block* right_Cb_block=malloc(sizeof(iM_block));
-            iM_block* left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* mid_Cr_block =malloc(sizeof(iM_block));
-            iM_block* right_Cr_block=malloc(sizeof(iM_block));
-            one_to_three_horizontal_duplication(old_im_mcu->LCb[0],left_Cb_block,mid_Cb_block,right_Cb_block);
-            one_to_three_horizontal_duplication(old_im_mcu->LCr[0],left_Cr_block,mid_Cr_block,right_Cr_block);
-
-            up_samp_im_mcu->LCb[0]=left_Cb_block;
-            up_samp_im_mcu->LCb[1]=mid_Cb_block;
-            up_samp_im_mcu->LCb[2]=right_Cb_block;
-            up_samp_im_mcu->LCr[0]=left_Cr_block;
-            up_samp_im_mcu->LCr[1]=mid_Cr_block;
-            up_samp_im_mcu->LCr[2]=right_Cr_block;
-            //free all old
-
-        }
-        else if ((S_fact[0]==1 && S_fact[1]==3)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
-            iM_block* upper_Cb_block =malloc(sizeof(iM_block));
-            iM_block* mid_Cb_block =malloc(sizeof(iM_block));
-            iM_block* lower_Cb_block=malloc(sizeof(iM_block));
-            iM_block* upper_Cr_block =malloc(sizeof(iM_block));
-            iM_block* mid_Cr_block =malloc(sizeof(iM_block));
-            iM_block* lower_Cr_block=malloc(sizeof(iM_block));
-            one_to_three_vertical_duplication(old_im_mcu->LCb[0],upper_Cb_block,mid_Cb_block,lower_Cb_block);
-            one_to_three_vertical_duplication(old_im_mcu->LCr[0],upper_Cr_block,mid_Cr_block,lower_Cr_block);
-
-            up_samp_im_mcu->LCb[0]=upper_Cb_block;
-            up_samp_im_mcu->LCb[1]=mid_Cb_block;
-            up_samp_im_mcu->LCb[2]=lower_Cb_block;
-            up_samp_im_mcu->LCr[0]=upper_Cr_block;
-            up_samp_im_mcu->LCr[1]=mid_Cr_block;
-            up_samp_im_mcu->LCr[2]=lower_Cr_block;
-            //free all old
-
+            free(LC);
+            //il faut free l'interieur aussi
         }
         else{
-            printf("CASE NOT TREATED type 0:");
-            printf("%ux%u %ux%u %ux%u \n",S_fact[0],S_fact[1],S_fact[2],S_fact[3],S_fact[4],S_fact[5]);        
+            printf("CASE NOT TREATED type 0:");       
         }
     }
-
-    else if(S_fact[2]==2 && S_fact[3]==1){
-        if (S_fact[0]==2 && S_fact[1]==1){
-            up_samp_im_mcu->LCb=old_im_mcu->LCb;
-            up_samp_im_mcu->LCr=old_im_mcu->LCr;
+    else if(h==2 && v==1){
+        if      (h0==2 && v0==1){
+            LCr=LC;
         }
-        else if(S_fact[0]==2 && S_fact[1]==2){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
+        else if(h0==2 && v0==2){
             iM_block* upper_left_Cb_block =malloc(sizeof(iM_block));
             iM_block* upper_right_Cb_block=malloc(sizeof(iM_block));
-            iM_block* upper_left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* upper_right_Cr_block=malloc(sizeof(iM_block));
+
 
             iM_block* lower_left_Cb_block =malloc(sizeof(iM_block));
             iM_block* lower_right_Cb_block=malloc(sizeof(iM_block));
-            iM_block* lower_left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* lower_right_Cr_block=malloc(sizeof(iM_block));
-
-            vertical_duplication(old_im_mcu->LCb[0],upper_left_Cb_block,lower_left_Cb_block);
-            vertical_duplication(old_im_mcu->LCb[1],upper_right_Cb_block,lower_right_Cb_block);
-
-            vertical_duplication(old_im_mcu->LCr[0],upper_left_Cr_block,lower_left_Cr_block);
-            vertical_duplication(old_im_mcu->LCr[1],upper_left_Cr_block,lower_right_Cr_block);
-            
-            up_samp_im_mcu->LCb[0]=upper_left_Cb_block;
-            up_samp_im_mcu->LCb[1]=upper_right_Cb_block;
-            up_samp_im_mcu->LCb[2]=lower_left_Cb_block;
-            up_samp_im_mcu->LCb[3]=lower_right_Cb_block;   
-
-            up_samp_im_mcu->LCr[0]=upper_left_Cr_block;
-            up_samp_im_mcu->LCr[1]=upper_right_Cr_block;
-            up_samp_im_mcu->LCr[2]=lower_left_Cr_block;
-            up_samp_im_mcu->LCr[3]=lower_right_Cr_block;
 
 
-            free(old_im_mcu->LCb);
-            free(old_im_mcu->LCr); //il faut free l'interieur aussi
+            vertical_duplication(LC[0],upper_left_Cb_block,lower_left_Cb_block);
+            vertical_duplication(LC[1],upper_right_Cb_block,lower_right_Cb_block);
+
+            LCr[0]=upper_left_Cb_block;
+            LCr[1]=upper_right_Cb_block;
+            LCr[2]=lower_left_Cb_block;
+            LCr[3]=lower_right_Cb_block;   
+
+
+            free(LC);//il faut free l'interieur aussi
         }
-        else if((S_fact[0]==4 && S_fact[1]==1)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
+        else if((h0==4 && v0==1)){
             iM_block* left_Cb_Block=malloc(sizeof(iM_block));
             iM_block* mid_left_Cb_Block=malloc(sizeof(iM_block));
             iM_block* mid_right_Cb_Block=malloc(sizeof(iM_block));
             iM_block* right_Cb_Block=malloc(sizeof(iM_block));
 
-            iM_block* left_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* mid_left_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* mid_right_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* right_Cr_Block=malloc(sizeof(iM_block));
+            horizontal_duplication(LC[0], left_Cb_Block,mid_left_Cb_Block );
+            horizontal_duplication(LC[1], mid_right_Cb_Block,  right_Cb_Block);
 
-            horizontal_duplication( old_im_mcu->LCb[0], left_Cb_Block,mid_left_Cb_Block );
-            horizontal_duplication( old_im_mcu->LCb[1], mid_right_Cb_Block,  right_Cb_Block);
 
-            horizontal_duplication( old_im_mcu->LCr[0], left_Cr_Block,mid_left_Cr_Block);
-            horizontal_duplication( old_im_mcu->LCr[1], mid_right_Cr_Block,  right_Cr_Block);
-
-            up_samp_im_mcu->LCb[0]=left_Cb_Block;
-            up_samp_im_mcu->LCb[1]=mid_left_Cb_Block;
-            up_samp_im_mcu->LCb[2]=mid_right_Cb_Block;
-            up_samp_im_mcu->LCb[3]=right_Cb_Block;
-
-            up_samp_im_mcu->LCr[0]=left_Cr_Block;
-            up_samp_im_mcu->LCr[1]=mid_left_Cr_Block;
-            up_samp_im_mcu->LCr[2]=mid_right_Cr_Block;
-            up_samp_im_mcu->LCr[3]=right_Cr_Block;
+            LCr[0]=left_Cb_Block;
+            LCr[1]=mid_left_Cb_Block;
+            LCr[2]=mid_right_Cb_Block;
+            LCr[3]=right_Cb_Block;
 
         }        
+        else if ((h0==2 && v0==3)){
+            //blocs are ordered this way
+            /*
+            0 1
+            2 3
+            4 5
+            
+            */
+            iM_block* Cb_0=malloc(sizeof(iM_block)); 
+            iM_block* Cb_1=malloc(sizeof(iM_block));
+            iM_block* Cb_2=malloc(sizeof(iM_block));
+            iM_block* Cb_3=malloc(sizeof(iM_block));
+            iM_block* Cb_4=malloc(sizeof(iM_block));
+            iM_block* Cb_5=malloc(sizeof(iM_block));
+
+
+
+
+            one_to_three_vertical_duplication(LC[0] , Cb_0 ,Cb_2,Cb_4);
+            one_to_three_vertical_duplication(LC[1], Cb_1 ,Cb_3,Cb_5);
+
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+
+
+            free(LC); //il faut free l'interieur aussi
+        }
+
         else{
             printf("CASE NOT TREATED type 1:");
-            printf("%ux%u %ux%u %ux%u \n",S_fact[0],S_fact[1],S_fact[2],S_fact[3],S_fact[4],S_fact[5]);        
         }
     }
     
-    else if(S_fact[2]==1 && S_fact[3]==2){
-        if (S_fact[0]==1 && S_fact[1]==2){
-            up_samp_im_mcu->LCb=old_im_mcu->LCb;
-            up_samp_im_mcu->LCr=old_im_mcu->LCr;
-        }
-        else if(S_fact[0]==2 && S_fact[1]==2){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-
+    else if(h==1 && v==2){
+        if (h0==1 && v0==2){
+            LCr=LC;
+            }
+        else if(h0==2 && v0==2){
             iM_block* upper_left_Cb_block =malloc(sizeof(iM_block));
             iM_block* upper_right_Cb_block=malloc(sizeof(iM_block));
-            iM_block* upper_left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* upper_right_Cr_block=malloc(sizeof(iM_block));
 
             iM_block* lower_left_Cb_block =malloc(sizeof(iM_block));
             iM_block* lower_right_Cb_block=malloc(sizeof(iM_block));
-            iM_block* lower_left_Cr_block =malloc(sizeof(iM_block));
-            iM_block* lower_right_Cr_block=malloc(sizeof(iM_block));
 
-            horizontal_duplication(old_im_mcu->LCb[0],upper_left_Cb_block,upper_right_Cb_block);
-            horizontal_duplication(old_im_mcu->LCb[1],lower_left_Cb_block,lower_right_Cb_block);
+
+            horizontal_duplication(LC[0],upper_left_Cb_block,upper_right_Cb_block);
+            horizontal_duplication(LC[1],lower_left_Cb_block,lower_right_Cb_block);
             
-            horizontal_duplication(old_im_mcu->LCr[0],upper_left_Cr_block,upper_right_Cr_block);
-            horizontal_duplication(old_im_mcu->LCr[1],lower_left_Cr_block,lower_right_Cr_block);
-            
-            up_samp_im_mcu->LCb[0]=upper_left_Cb_block;
-            up_samp_im_mcu->LCb[1]=upper_right_Cb_block;
-            up_samp_im_mcu->LCb[2]=lower_left_Cb_block;
-            up_samp_im_mcu->LCb[3]=lower_right_Cb_block;   
-
-            up_samp_im_mcu->LCr[0]=upper_left_Cr_block;
-            up_samp_im_mcu->LCr[1]=upper_right_Cr_block;
-            up_samp_im_mcu->LCr[2]=lower_left_Cr_block;
-            up_samp_im_mcu->LCr[3]=lower_right_Cr_block;
+            LCr[0]=upper_left_Cb_block;
+            LCr[1]=upper_right_Cb_block;
+            LCr[2]=lower_left_Cb_block;
+            LCr[3]=lower_right_Cb_block;   
 
 
-            free(old_im_mcu->LCb);
-            free(old_im_mcu->LCr); //il faut free l'interieur aussi
+            free(LC); //il faut free l'interieur aussi
         }
-        else if((S_fact[0]==1 && S_fact[1]==4)){
-            up_samp_im_mcu->LCb= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
-            up_samp_im_mcu->LCr= calloc(S_fact[0]* S_fact[1],sizeof(iM_block*));
+        else if((h0==1 && v0==4)){
             iM_block* upper_Cb_Block=malloc(sizeof(iM_block));
             iM_block* upper_mid_Cb_Block=malloc(sizeof(iM_block));
             iM_block* lower_mid_Cb_Block=malloc(sizeof(iM_block));
             iM_block* lower_Cb_Block=malloc(sizeof(iM_block));
 
-            iM_block* upper_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* upper_mid_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* lower_mid_Cr_Block=malloc(sizeof(iM_block));
-            iM_block* lower_Cr_Block=malloc(sizeof(iM_block));
+            vertical_duplication(LC[0],upper_Cb_Block,      upper_mid_Cb_Block);
+            vertical_duplication(LC[1],lower_mid_Cb_Block,  lower_Cb_Block);
 
-            vertical_duplication(old_im_mcu->LCb[0],upper_Cb_Block,      upper_mid_Cb_Block);
-            vertical_duplication(old_im_mcu->LCb[1],lower_mid_Cb_Block,  lower_Cb_Block);
-
-            vertical_duplication(old_im_mcu->LCr[0],upper_Cr_Block,      upper_mid_Cr_Block);
-            vertical_duplication(old_im_mcu->LCr[1],lower_mid_Cr_Block,  lower_Cr_Block);
-
-            up_samp_im_mcu->LCb[0]=upper_Cb_Block;
-            up_samp_im_mcu->LCb[1]=upper_mid_Cb_Block;
-            up_samp_im_mcu->LCb[2]=lower_mid_Cb_Block;
-            up_samp_im_mcu->LCb[3]=lower_Cb_Block;
-
-            up_samp_im_mcu->LCr[0]=upper_Cr_Block;
-            up_samp_im_mcu->LCr[1]=upper_mid_Cr_Block;
-            up_samp_im_mcu->LCr[2]=lower_mid_Cr_Block;
-            up_samp_im_mcu->LCr[3]=lower_Cr_Block;
-
+            LCr[0]=upper_Cb_Block;
+            LCr[1]=upper_mid_Cb_Block;
+            LCr[2]=lower_mid_Cb_Block;
+            LCr[3]=lower_Cb_Block;
+            free(LC);
         }
+        else if ((h0==3 && v0==2)){
+            //blocs are ordered this way
+            /*
+            0 1 2 
+            3 4 5              
+            */
+
+            iM_block* Cb_0=malloc(sizeof(iM_block)); 
+            iM_block* Cb_1=malloc(sizeof(iM_block));
+            iM_block* Cb_2=malloc(sizeof(iM_block));
+            iM_block* Cb_3=malloc(sizeof(iM_block));
+            iM_block* Cb_4=malloc(sizeof(iM_block));
+            iM_block* Cb_5=malloc(sizeof(iM_block));
+
+            one_to_three_horizontal_duplication(LC[0], Cb_0 ,Cb_1,Cb_2);
+            one_to_three_horizontal_duplication(LC[1], Cb_3 ,Cb_4,Cb_5);
+
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+
+            free(LC);
+            //il faut free l'interieur aussi
+        }
+
         else{
             printf("CASE NOT TREATED type 2:");
-            printf("%ux%u %ux%u %ux%u \n",S_fact[0],S_fact[1],S_fact[2],S_fact[3],S_fact[4],S_fact[5]);        
         }
     
     }
  
+    else if(((h==3 && v==1))){
+        if  (h0==3 && v0==1){
+            LCr=LC;
+        }
+        else if ((h0==3 && v0==2)){
+            //blocs are ordered this way
+            /*
+            0 1 2 
+            3 4 5              
+            */
 
+            iM_block* Cb_0=malloc(sizeof(iM_block)); 
+            iM_block* Cb_1=malloc(sizeof(iM_block));
+            iM_block* Cb_2=malloc(sizeof(iM_block));
+            iM_block* Cb_3=malloc(sizeof(iM_block));
+            iM_block* Cb_4=malloc(sizeof(iM_block));
+            iM_block* Cb_5=malloc(sizeof(iM_block));
 
-    else if(((S_fact[2]==3 && S_fact[3]==1))){
-        if  (S_fact[0]==3 && S_fact[1]==1){
-            up_samp_im_mcu->LCb=old_im_mcu->LCb;
-            up_samp_im_mcu->LCr=old_im_mcu->LCr;
+            vertical_duplication(LC[0],Cb_0 ,Cb_3);
+            vertical_duplication(LC[1],Cb_1 ,Cb_4);
+            vertical_duplication(LC[2],Cb_2 ,Cb_5);
+
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+
+            free(LC);
+            //il faut free l'interieur aussi
         }
         else{
             printf("CASE NOT TREATED type 3:");
-            printf("%ux%u %ux%u %ux%u \n",S_fact[0],S_fact[1],S_fact[2],S_fact[3],S_fact[4],S_fact[5]);        
         }
     }
 
-    else if(((S_fact[2]==1 && S_fact[3]==3))){
-        if  (S_fact[0]==1 && S_fact[1]==3){
-            up_samp_im_mcu->LCb=old_im_mcu->LCb;
-            up_samp_im_mcu->LCr=old_im_mcu->LCr;
+    else if(((h==1 && v==3))){
+        if  (h0==1 && v0==3){
+            LCr=LC;
         }
+        else if ((h0==2 && v0==3)){
+            //blocs are ordered this way
+            /*
+            0 1
+            2 3
+            4 5
+            
+            */
+            iM_block* Cb_0=malloc(sizeof(iM_block)); 
+            iM_block* Cb_1=malloc(sizeof(iM_block));
+            iM_block* Cb_2=malloc(sizeof(iM_block));
+            iM_block* Cb_3=malloc(sizeof(iM_block));
+            iM_block* Cb_4=malloc(sizeof(iM_block));
+            iM_block* Cb_5=malloc(sizeof(iM_block));
+
+            horizontal_duplication(LC[0],Cb_0,Cb_1);
+            horizontal_duplication(LC[1],Cb_2,Cb_3);
+            horizontal_duplication(LC[2],Cb_4,Cb_5);
+
+            LCr[0]=Cb_0;
+            LCr[1]=Cb_1;
+            LCr[2]=Cb_2;
+            LCr[3]=Cb_3;
+            LCr[4]=Cb_4;
+            LCr[5]=Cb_5;
+
+
+
+            free(LC); //il faut free l'interieur aussi
+        }
+
         else{
             printf("CASE NOT TREATED type 4:");
-            printf("%ux%u %ux%u %ux%u \n",S_fact[0],S_fact[1],S_fact[2],S_fact[3],S_fact[4],S_fact[5]);        
         }
     }
     
     else{
-        printf("CASE NOT TREATED type 4:");
-        printf("%ux%u %ux%u %ux%u \n",S_fact[0],S_fact[1],S_fact[2],S_fact[3],S_fact[4],S_fact[5]);       
+        printf("CASE NOT TREATED type 5:");
+    }
+}
+
+void modi_mcu_r(iM_MCU* old_im_mcu, iM_MCU* up_samp_im_mcu,uint8_t* S_fact){
+    up_samp_im_mcu->LY=old_im_mcu->LY;
+    
+    if((S_fact[0]!=S_fact[2]) || (S_fact[1]!=S_fact[3])){
+        
+        up_samp_im_mcu->LCb= calloc(S_fact[0]*S_fact[1],sizeof(iM_block*));
+        modi_LCb(old_im_mcu->LCb,up_samp_im_mcu->LCb ,S_fact[2], S_fact[3],S_fact[0], S_fact[1] );
+    }
+    else{
+        up_samp_im_mcu->LCb=old_im_mcu->LCb;
+    }
+    if((S_fact[0]!=S_fact[4]) || (S_fact[1]!=S_fact[5])){
+        
+        up_samp_im_mcu->LCr= calloc(S_fact[0]*S_fact[1],sizeof(iM_block*));
+        modi_LCb(old_im_mcu->LCr,up_samp_im_mcu->LCr ,S_fact[4], S_fact[5],S_fact[0], S_fact[1] );;
+    }
+    else{
+        up_samp_im_mcu->LCr=old_im_mcu->LCr;
     }
 
-
-
 }
+
 
 iM_LMCU* up_sample(iM_LMCU* im_lmcu,struct SOF* sof){
 //this puts the up_sampled version of im_lmcu in result and returns it (adding iM_MCUs and all the steps) 
@@ -782,7 +786,8 @@ iM_LMCU* up_sample(iM_LMCU* im_lmcu,struct SOF* sof){
     
     for (uint32_t i=0;i<im_lmcu->MCU_counter;i++){
         result->iM_MCUs[i]=malloc(sizeof(iM_MCU));
-        modi_mcu(im_lmcu->iM_MCUs[i] ,result->iM_MCUs[i],S_fact);
+        
+        modi_mcu_r(im_lmcu->iM_MCUs[i] ,result->iM_MCUs[i],S_fact);
         //free(im_lmcu->iM_MCUs[i]);//il faut  pas tjrs free LCb/LCr et pas leurs blocs mais pas LY
     }   
 
