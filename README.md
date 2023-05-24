@@ -1,5 +1,5 @@
 <div align="center">
-  <h1><span style="color:blue">OUR JPG/JPEG DECODER</span></h1>
+  <h1><span style="color:blue">OUR JFIF/JPEG DECODER</span></h1>
 </div>
 
 ## <span style="color:red">MODULES AND SPECIFICATIONS: </span>
