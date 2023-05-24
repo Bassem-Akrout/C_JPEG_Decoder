@@ -15,8 +15,8 @@ void horizontal_duplication(iM_block* initial,iM_block* left_block, iM_block* ri
         left_block->content[i]=calloc(8,sizeof(uint8_t*));
         right_block->content[i]=calloc(8,sizeof(uint8_t*));
         for (int j = 0; j < 8; j++) {
-            left_block->content[i][j]=calloc(8,sizeof(uint8_t));
-            right_block->content[i][j]=calloc(8,sizeof(uint8_t));
+            left_block->content[i][j]=calloc(1,sizeof(uint8_t));
+            right_block->content[i][j]=calloc(1,sizeof(uint8_t));
         }
     }
     for (int i = 0; i < 8; i++){
@@ -42,8 +42,8 @@ void vertical_duplication(iM_block* initial,iM_block* upper_block, iM_block* low
         upper_block->content[i]=calloc(8,sizeof(uint8_t*));
         lower_block->content[i]=calloc(8,sizeof(uint8_t*));
         for (int j = 0; j < 8; j++) {
-            upper_block->content[i][j]=calloc(8,sizeof(uint8_t));
-            lower_block->content[i][j]=calloc(8,sizeof(uint8_t));
+            upper_block->content[i][j]=calloc(1,sizeof(uint8_t));
+            lower_block->content[i][j]=calloc(1,sizeof(uint8_t));
         }
     }
     for (int i = 0; i < 4; i++){
@@ -67,9 +67,9 @@ void one_to_three_horizontal_duplication(iM_block* initial,iM_block* left_block,
         mid_block->content[i]=calloc(8,sizeof(uint8_t*));
         right_block->content[i]=calloc(8,sizeof(uint8_t*));
         for (int j = 0; j < 8; j++) {
-            left_block->content[i][j]=calloc(8,sizeof(uint8_t));
-            mid_block->content[i][j]=calloc(8,sizeof(uint8_t));
-            right_block->content[i][j]=calloc(8,sizeof(uint8_t));
+            left_block->content[i][j]=calloc(1,sizeof(uint8_t));
+            mid_block->content[i][j]=calloc(1,sizeof(uint8_t));
+            right_block->content[i][j]=calloc(1,sizeof(uint8_t));
         }
     }
     for (int i = 0; i < 8; i++){
@@ -146,14 +146,14 @@ void one_to_four_vertical_duplication(iM_block* initial,iM_block* upper_block,iM
     lower_block->content = calloc(8,sizeof(uint8_t**));
     for (int i = 0; i < 8; i++) {
         upper_block->content[i]=calloc(8,sizeof(uint8_t*));
-        upper_mid_block->content[i] = calloc(8,sizeof(uint8_t**));
-        lower_mid_block->content[i] = calloc(8,sizeof(uint8_t**));
+        upper_mid_block->content[i] = calloc(8,sizeof(uint8_t*));
+        lower_mid_block->content[i] = calloc(8,sizeof(uint8_t*));
         lower_block->content[i]=calloc(8,sizeof(uint8_t*));
         for (int j = 0; j < 8; j++) {
-            upper_block->content[i][j]=calloc(8,sizeof(uint8_t));
-            upper_mid_block->content[i][j] = calloc(8,sizeof(uint8_t**));
-            lower_mid_block->content[i][j] = calloc(8,sizeof(uint8_t**));
-            lower_block->content[i][j]=calloc(8,sizeof(uint8_t));
+            upper_block->content[i][j]=calloc(1,sizeof(uint8_t));
+            upper_mid_block->content[i][j] = calloc(1,sizeof(uint8_t));
+            lower_mid_block->content[i][j] = calloc(1,sizeof(uint8_t));
+            lower_block->content[i][j]=calloc(1,sizeof(uint8_t));
         }
     }
     for (int i = 0; i < 2; i++){
@@ -192,14 +192,14 @@ void one_to_four_horizontal_duplication(iM_block* initial,iM_block* left_block,i
     right_block->content = calloc(8,sizeof(uint8_t**));
     for (int i = 0; i < 8; i++) {
         left_block->content[i]=calloc(8,sizeof(uint8_t*));
-        mid_left_block->content[i] = calloc(8,sizeof(uint8_t**));
-        mid_right_block->content[i] = calloc(8,sizeof(uint8_t**));
+        mid_left_block->content[i] = calloc(8,sizeof(uint8_t*));
+        mid_right_block->content[i] = calloc(8,sizeof(uint8_t*));
         right_block->content[i]=calloc(8,sizeof(uint8_t*));
         for (int j = 0; j < 8; j++) {
-            left_block->content[i][j]=calloc(8,sizeof(uint8_t));
-            mid_left_block->content[i][j] = calloc(8,sizeof(uint8_t**));
-            mid_right_block->content[i][j] = calloc(8,sizeof(uint8_t**));
-            right_block->content[i][j]=calloc(8,sizeof(uint8_t));
+            left_block->content[i][j]=calloc(1,sizeof(uint8_t));
+            mid_left_block->content[i][j] = calloc(1,sizeof(uint8_t));
+            mid_right_block->content[i][j] = calloc(1,sizeof(uint8_t));
+            right_block->content[i][j]=calloc(1,sizeof(uint8_t));
         }
     }
     for (int i = 0; i < 8; i++){
@@ -795,7 +795,7 @@ iM_LMCU* up_sample(iM_LMCU* im_lmcu,struct SOF* sof){
     }   
 
     }
-
+    free(S_fact);
     return result;
 }
 

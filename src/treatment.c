@@ -17,9 +17,9 @@ void create_M_MCU(M_MCU* new_M_MCU ,MCU* mcu,uint8_t* occ_list,struct DQTs* DQT_
     uint8_t Y_index,Cb_index,Cr_index;
 
     if (components_number ==3){
-        new_M_MCU->LY =calloc(occ_list[0],sizeof(M_block*));
+        new_M_MCU->LY  =calloc(occ_list[0],sizeof(M_block*));
         new_M_MCU->LCb =calloc(occ_list[1],sizeof(M_block*));
-        new_M_MCU->LCr =calloc(occ_list[02],sizeof(M_block*));
+        new_M_MCU->LCr =calloc(occ_list[2],sizeof(M_block*));
         Y_iq_index=sof->quantification_table_i_q[0];
         Cb_iq_index=sof->quantification_table_i_q[1];
         Cr_iq_index=sof->quantification_table_i_q[2];
@@ -37,7 +37,7 @@ void create_M_MCU(M_MCU* new_M_MCU ,MCU* mcu,uint8_t* occ_list,struct DQTs* DQT_
 
         for (uint8_t i=0; i<occ_list[0];i++){
             new_M_MCU->LY[i]=malloc(sizeof(M_block));
-            create_M_block(new_M_MCU->LY[i],mcu->LY[i],DQT_list->dqt_table[Y_index]);        
+            create_M_block(new_M_MCU->LY[i],mcu->LY[i],DQT_list->dqt_table[Y_index]); 
         }
         for (uint8_t i=0; i<occ_list[1];i++){
             new_M_MCU->LCb[i]=malloc(sizeof(M_block));
@@ -47,7 +47,12 @@ void create_M_MCU(M_MCU* new_M_MCU ,MCU* mcu,uint8_t* occ_list,struct DQTs* DQT_
             new_M_MCU->LCr[i] = malloc(sizeof(M_block));
             create_M_block(new_M_MCU->LCr[i] ,mcu->LCr[i],DQT_list->dqt_table[Cr_index]);
         }
-    }else{
+        free(mcu->LY);
+        free(mcu->LCb);
+        free(mcu->LCr);
+        free(mcu);
+    }
+    else{
         Y_iq_index=sof->quantification_table_i_q[0];
         new_M_MCU->LY =calloc(occ_list[0],sizeof(M_block*));
 
@@ -59,7 +64,8 @@ void create_M_MCU(M_MCU* new_M_MCU ,MCU* mcu,uint8_t* occ_list,struct DQTs* DQT_
         for (uint8_t i=0; i<occ_list[0];i++){
                 new_M_MCU->LY[i]=malloc(sizeof(M_block));
                 create_M_block(new_M_MCU->LY[i],mcu->LY[i],DQT_list->dqt_table[Y_index]); 
-            }       
+        }     
+        free(mcu->LY);  
     }
 }
 
@@ -75,8 +81,10 @@ M_LMCU* create_M_LMCU(LMCU* lmcu,struct DQTs* DQT_list,uint8_t components_number
     for(uint32_t i=0; i<lmcu->MCU_counter ;i++){
         new_M_LMCU->M_MCUs[i]=malloc(sizeof(M_MCU));
         create_M_MCU(new_M_LMCU->M_MCUs[i],lmcu->MCUs[i],lmcu->occurrence_list, DQT_list,components_number, sof);
-        free(lmcu->MCUs[i]);
+        
     }
+    free(lmcu->MCUs);
+    free(lmcu);
 
     /*free(lmcu->MCUs);
     free(lmcu);*/
@@ -103,7 +111,10 @@ void create_iM_MCU(iM_MCU* new_iM_MCU ,M_MCU* mcu,uint8_t* occ_list,struct SOF* 
             new_iM_MCU->LCr[i] = malloc(sizeof(iM_block));
             create_iM_block(new_iM_MCU->LCr[i] ,mcu->LCr[i]);
         }
-        
+        free(mcu->LY);
+        free(mcu->LCb);
+        free(mcu->LCr);
+        free(mcu);
         }
 
         else {
@@ -113,6 +124,7 @@ void create_iM_MCU(iM_MCU* new_iM_MCU ,M_MCU* mcu,uint8_t* occ_list,struct SOF* 
             new_iM_MCU->LY[i]=malloc(sizeof(iM_block));
             create_iM_block(new_iM_MCU->LY[i],mcu->LY[i]);   
         }
+        free(mcu->LY); 
         }
 }   
 
@@ -127,11 +139,10 @@ iM_LMCU* create_iM_LMCU(M_LMCU* m_lmcu,struct SOF* sof){
     for(uint32_t i=0; i<m_lmcu->MCU_counter ;i++){
         new_iM_LMCU->iM_MCUs[i]=malloc(sizeof(iM_MCU));
         create_iM_MCU(new_iM_LMCU->iM_MCUs[i],m_lmcu->M_MCUs[i],m_lmcu->occurrence_list,sof);
-        free(m_lmcu->M_MCUs[i]);
     }
 
-    /*free(m_lmcu->M_MCUs);
-    free(m_lmcu);*/
+    free(m_lmcu->M_MCUs);
+    free(m_lmcu);
     return new_iM_LMCU;
 }
 

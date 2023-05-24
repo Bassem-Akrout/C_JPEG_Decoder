@@ -15,6 +15,7 @@ huffnode;
 
 /*FONCTIONS*/
 extern huffnode* huffmancodes(uint8_t* list_length,uint8_t* symbols);
+extern void free_hufftree(huffnode* root) ;
 
 
 #endif /*_HUFFMAN_H_*/

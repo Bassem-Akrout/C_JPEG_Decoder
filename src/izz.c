@@ -59,11 +59,14 @@ void create_M_block(M_block* new_M_Block, block*  block,struct DQT* dqt_table){
     for (int i = 0; i < 8; i++) {
         new_M_Block->content[i]=calloc(8,sizeof(int16_t*));
         for (int j = 0; j < 8; j++) {
-            new_M_Block->content[i][j]=calloc(8,sizeof(int16_t));
+            new_M_Block->content[i][j]=calloc(1,sizeof(int16_t)); ////!!!!! careful
         }
         
     }
     zz_inverse(new_M_Block->content,block->content, dqt_table);
+    for (int i = 0; i < 64; i++) {
+            free(block->content[i]); ////!!!!! careful
+    }
     free(block->content);
     free(block);
 

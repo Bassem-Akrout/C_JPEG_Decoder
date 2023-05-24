@@ -25,6 +25,17 @@ huffnode* create_huffnode(huffnode* parent, char* char_value) {
     }
     return new_node;
 }
+//freez hufftree
+void free_hufftree(huffnode* root) {
+ if (root == NULL) {
+ return;
+ }
+
+ free_hufftree(root->left);
+ free_hufftree(root->right);
+ free(root);
+}
+
 // Fucntion that creates the left child// the path of the child is obtained by concatenating a char to the parent's path 0 in this case
 huffnode* goleft(huffnode* parent, char* char_value) {
     huffnode* left_child = create_huffnode(parent, char_value);

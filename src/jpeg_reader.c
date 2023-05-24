@@ -218,5 +218,6 @@ void free_header(struct HEADER* header){
     free(header->sos->i_h_AC);
     free(header->sos->i_h_DC); 
     free(header->sos);
+    free(header);
  
 }

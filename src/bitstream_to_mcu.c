@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "../include/bitstream_to_mcu.h"
+#include "../include/jpeg_reader.h"
 #include <string.h>
+#include <math.h>
 
 // Function to create a block
 block* createBlock(uint8_t T, int16_t** block_content) {
@@ -97,7 +99,7 @@ uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint8_t lst_length) {
 
 
 // Function that returns a pointer to an LMCU which represents the list of MCUS given a certain bitstream and other parameters including the correct huffman trees
-LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurrence_list, huffnode** hufftrees,uint8_t components_number,uint16_t height, uint16_t width) {
+LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurrence_list, huffnode** hufftrees,uint8_t components_number,uint16_t height, uint16_t width,struct SOF* sof) {
     uint32_t i = 0;
     uint8_t* order_list =calloc(3,sizeof(uint8_t));
     uint8_t* occurrence_list =calloc(3,sizeof(uint8_t));
@@ -124,7 +126,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     for (int k = 0; k < 3; k++) {
         blocks_in_MCU += occurrence_list[k];
     }    
-    uint32_t total_nbr_MCU = (uint32_t)((uint32_t)(width * height) / (occurrence_list[0] *  64));
+    uint32_t total_nbr_MCU = ((uint32_t)(ceil((double)width/(double)(8*sof->sampling_horizontal[0]))) *(uint32_t)(ceil((double)height/(double)(8*sof->sampling_vertical[0]))));
     MCU** MCU_list = calloc(total_nbr_MCU,sizeof(MCU*));
     for (uint32_t k = 0; k < total_nbr_MCU; k++) {
     MCU_list[k] = malloc(sizeof(MCU));
@@ -262,45 +264,47 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                     }
                 }
         }
+        
         list_of_blocks[MCU_detector] =createBlock(type_,block_list);
         MCU_detector++;
+
+        free(block_list);
     }
 
- 
-    Y_counter = 0;
-    Cb_counter = 0;
-    Cr_counter = 0;
-    Y_list = malloc(occurrence_list[0] * sizeof(block*));
-    if (components_number==3){
-    Cb_list = malloc(occurrence_list[1] * sizeof(block*));
-    Cr_list = malloc(occurrence_list[2] * sizeof(block*));
-    }
-    for (uint32_t counter = 0; counter < blocks_in_MCU; counter++) {
-        if (types[counter] == 0) {
-            Y_list[Y_counter++] = list_of_blocks[counter];
-        }
-        else if (types[counter] == 1) {
-            Cb_list[Cb_counter++] = list_of_blocks[counter];
-        } 
-        else {
-            Cr_list[Cr_counter++] = list_of_blocks[counter];
-        }
-    }
-    new_MCU=createMCU(Y_list,  Cb_list, Cr_list  );
-
-    MCU_list[MCU_counter] = new_MCU;
     
-    MCU_counter++;
+        Y_counter = 0;
+        Cb_counter = 0;
+        Cr_counter = 0;
+        Y_list = malloc(occurrence_list[0] * sizeof(block*));
+        if (components_number==3){
+        Cb_list = malloc(occurrence_list[1] * sizeof(block*));
+        Cr_list = malloc(occurrence_list[2] * sizeof(block*));
+        }
+        for (uint32_t counter = 0; counter < blocks_in_MCU; counter++) {
+            if (types[counter] == 0) {
+                Y_list[Y_counter++] = list_of_blocks[counter];
+            }
+            else if (types[counter] == 1) {
+                Cb_list[Cb_counter++] = list_of_blocks[counter];
+            } 
+            else {
+                Cr_list[Cr_counter++] = list_of_blocks[counter];
+            }
+
+        }
+        new_MCU=createMCU(Y_list,  Cb_list, Cr_list  );
+
+        MCU_list[MCU_counter] = new_MCU;
+
+        MCU_counter++;
+        free(list_of_blocks);
 }
 
 LMCU* MCU_lis = createLMCU(MCU_list,  order_list,  occurrence_list,MCU_counter);
 
 //freez
 free(types);
-
-free(block_list);
-free(list_of_blocks);
-
+//hufftrees freed in main
 return MCU_lis;
 }
 

@@ -254,6 +254,8 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
         printf("\n \n \n CASE NOT TREATED UP_SAPMLE: \n \n \n ");
         printf("%ux%u %ux%u %ux%u \n",sof->sampling_horizontal[0],sof->sampling_vertical[0],sof->sampling_horizontal[1],sof->sampling_vertical[1],sof->sampling_horizontal[2],sof->sampling_vertical[2]);        
         }
+    fclose(new_image);
+    free(new_file);
 }
 
 
