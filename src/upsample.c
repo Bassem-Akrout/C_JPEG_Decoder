@@ -4,9 +4,11 @@
 #include "../include/idct.h"
 #include "../include/jpeg_reader.h"
 
-
+// Returns two blocks by duplication (see example)
 void horizontal_duplication(iM_block* initial,iM_block* left_block, iM_block* right_block){
-
+    /*example: intitial first line {0,1,2,3,4,5,6,7}
+                left_block first line {0,0,1,1,2,2,3,3}
+                right_bock first line {4,4,5,5,6,6,7,7}*/
     left_block->content = calloc(8,sizeof(uint8_t**));
     right_block->content = calloc(8,sizeof(uint8_t**));
     for (int i = 0; i < 8; i++) {
@@ -31,7 +33,9 @@ void horizontal_duplication(iM_block* initial,iM_block* left_block, iM_block* ri
 }
 
 void vertical_duplication(iM_block* initial,iM_block* upper_block, iM_block* lower_block){
-
+    /*example: intitial first     column {0,1,2,3,4,5,6,7}
+                upper_block first column {0,0,1,1,2,2,3,3}
+                lower_block first column {4,4,5,5,6,6,7,7}*/
     upper_block->content = calloc(8,sizeof(uint8_t**));
     lower_block->content = calloc(8,sizeof(uint8_t**));
     for (int i = 0; i < 8; i++) {
@@ -52,7 +56,7 @@ void vertical_duplication(iM_block* initial,iM_block* upper_block, iM_block* low
         }
     }
 }
-
+// Returns three blocks by duplication (see example)
 void one_to_three_horizontal_duplication(iM_block* initial,iM_block* left_block,iM_block* mid_block ,iM_block* right_block){
 
     left_block->content = calloc(8,sizeof(uint8_t**));
@@ -133,7 +137,7 @@ void one_to_three_vertical_duplication(iM_block* initial,iM_block* upper_block,i
 
 
 }
-
+// Returns four blocks by duplication
 void one_to_four_vertical_duplication(iM_block* initial,iM_block* upper_block,iM_block* upper_mid_block,iM_block* lower_mid_block, iM_block* lower_block){
 
     upper_block->content = calloc(8,sizeof(uint8_t**));
@@ -744,7 +748,7 @@ void modi_LCb(iM_block** LC ,iM_block** LCr,uint8_t h, uint8_t v,uint8_t h0, uin
         printf("CASE NOT TREATED type 5:");
     }
 }
-
+// gives the upsampled iM_MCU given the intitial one
 void modi_mcu_r(iM_MCU* old_im_mcu, iM_MCU* up_samp_im_mcu,uint8_t* S_fact){
     up_samp_im_mcu->LY=old_im_mcu->LY;
     
@@ -767,9 +771,8 @@ void modi_mcu_r(iM_MCU* old_im_mcu, iM_MCU* up_samp_im_mcu,uint8_t* S_fact){
 
 }
 
-
-iM_LMCU* up_sample(iM_LMCU* im_lmcu,struct SOF* sof){
 //this puts the up_sampled version of im_lmcu in result and returns it (adding iM_MCUs and all the steps) 
+iM_LMCU* up_sample(iM_LMCU* im_lmcu,struct SOF* sof){
     iM_LMCU* result;
     uint8_t* S_fact;
     if (sof->components_number==3){

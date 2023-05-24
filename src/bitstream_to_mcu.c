@@ -36,7 +36,7 @@ LMCU* createLMCU(MCU** MCUs, uint8_t* order_list, uint8_t* occurrence_list, uint
 }
 
 
-
+// Function used to find the corresponding code to(index,magnitude)
 int16_t find_code(char* index, uint8_t magnitude) {
     
     int16_t decimal = 0;
@@ -57,17 +57,12 @@ int16_t find_code(char* index, uint8_t magnitude) {
 
     return decimal;
 }
-
-uint8_t find_position(uint8_t *order_list, uint8_t i  ) {
-    for (uint8_t index = 0; index < 3; index++) {
-        if (order_list[index] == i) {
-            return index;
-        }
-    }
-    return -1; // Element not found, returning a special value (-1)
-}
-
+// Function gives a list of the orderd types 
 uint8_t* typess(uint8_t *occurence_list, uint8_t *order_list) {
+    /*example: occurence_list=4,2,1
+               order_list=1,0,3
+    -->types:  1,1,0,0,0,0,3
+    */
     uint8_t i0= order_list[0];
     uint8_t i1= order_list[1];
     uint8_t i2= order_list[2];
@@ -88,8 +83,9 @@ uint8_t* typess(uint8_t *occurence_list, uint8_t *order_list) {
     
 }
 
-
+// Function that returns the firs occurence of i in lst 
 uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint8_t lst_length) {
+    /*precondition: i is in lst*/
     for (uint8_t index = 0; index < lst_length; index++) {
         if (lst[index] == i) {
             return index;
@@ -100,7 +96,7 @@ uint8_t first_occurrence(uint8_t i, uint8_t *lst, uint8_t lst_length) {
 
 
 
-
+// Function that returns a pointer to an LMCU which represents the list of MCUS given a certain bitstream and other parameters including the correct huffman trees
 LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurrence_list, huffnode** hufftrees,uint8_t components_number,uint16_t height, uint16_t width) {
     uint32_t i = 0;
     uint8_t* order_list =calloc(3,sizeof(uint8_t));
@@ -154,7 +150,8 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     int Y_counter ,Cb_counter,Cr_counter;
     char* index;
 
-    while (i < strlen(BS) - 7) {//while cursor <-7;
+    while (i < strlen(BS) - 7)/*note that the length of BS is multiple of 8 
+                                this is done to treat the case where the length effective bitstream isn't a multiple of 8 */ {
         MCU_detector = 0;   
         list_of_blocks = malloc(blocks_in_MCU * sizeof(block*));
         //one mcu
@@ -170,7 +167,7 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                 if (block_detector == 0) {
                     // DC
                     root = hufftrees[2 * type_];
-                    while (!(root->left == NULL && root->right == NULL)) {//sure ?
+                    while (!(root->left == NULL && root->right == NULL)) {
                         char bit = BS[i++];
                         if (bit == '0') {
                             root = root->left;
@@ -184,10 +181,8 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                         null = (root->S )>>4;
                         mag = (root->S) &(0x0f);
                     }
-                    index = malloc((mag + 1) * sizeof(char));//// IL FAUT free juste apres
+                    index = malloc((mag + 1) * sizeof(char));
                     for (int j = 0; j < mag; j++) {
-                        //char c = fgetc(bitstream);
-                        //index[j]=c;
                         index[j] = BS[i++];
                     }
                     index[mag] = '\0';
@@ -210,9 +205,9 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
                         
                     } else {
                         //DCi
-                        NotDC = find_code(index, mag);//if mag==0 index = "" and find_code(index, mag)=0
+                        NotDC = find_code(index, mag);
                         if (type_ == 0) {
-                            DCy += NotDC; //verify notDc is added correctly
+                            DCy += NotDC;
                             *(block_list[block_detector]) = DCy;
                         } else if (type_ == 1) {
                             DCb += NotDC;
@@ -297,8 +292,6 @@ LMCU* bit_stream_to_LMCU(char* BS, uint8_t* pre_order_list, uint8_t* pre_occurre
     
     MCU_counter++;
 }
-//printf "%x", *(MCU_list[0]->LY[0]->content[0])
-
 
 LMCU* MCU_lis = createLMCU(MCU_list,  order_list,  occurrence_list,MCU_counter);
 

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "../include/huffman.h"
+// Function that creates a huffnode: either the root or a child, the char_value is used to create the paths
 huffnode* create_huffnode(huffnode* parent, char* char_value) {
     huffnode* new_node = (huffnode*)malloc(sizeof(huffnode));
     if (parent == NULL) {
@@ -24,19 +25,20 @@ huffnode* create_huffnode(huffnode* parent, char* char_value) {
     }
     return new_node;
 }
-
+// Fucntion that creates the left child// the path of the child is obtained by concatenating a char to the parent's path 0 in this case
 huffnode* goleft(huffnode* parent, char* char_value) {
     huffnode* left_child = create_huffnode(parent, char_value);
     parent->left = left_child;
     return left_child;
 }
 
+// Fucntion that creates the left child// the path of the child is obtained by concatenating a char to the parent's path 1 in this case
 huffnode* goright(huffnode* parent, char* char_value) {
     huffnode* right_child = create_huffnode(parent, char_value);
     parent->right = right_child;
     return right_child;
 }
-
+// returns the first parent having a free right child
 huffnode* findfreeparent(huffnode* node) {
     if (node->right == NULL && node->left != NULL) {
         return node;
@@ -49,7 +51,7 @@ huffnode* findfreeparent(huffnode* node) {
     }
     return node;
 }
-
+// Function that creates the the hufftrees (path,symbol)
 struct huffnode* huffmancodes(uint8_t* list_length, uint8_t* symbols) {
     struct huffnode* root = create_huffnode(NULL, "");
     int j = 0;

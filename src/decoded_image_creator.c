@@ -86,9 +86,9 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
     uint8_t m;
     uint8_t nbr_blocs_per_mcu=sof->sampling_horizontal[0]*sof->sampling_vertical[0];
 
-
+    //case of h,v<=2
     if(sof->sampling_horizontal[0]<=2 &&sof->sampling_vertical[0]<=2){
-        //case of h,v<=2
+
         for (uint32_t l=0;l<MCU_vertical_number;l++){
             if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
             else{jmax=sof->sampling_vertical[0]*8;}
@@ -109,9 +109,10 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                         }
             }  
         }
+    //case of h,v in {(4,1) ,(1,4),(3,1) ,(1,3 )}
     else if((sof->sampling_horizontal[0]==4 && sof->sampling_vertical[0]==1) || (sof->sampling_horizontal[0]==1 && sof->sampling_vertical[0]==4)
     ||(sof->sampling_horizontal[0]==3 && sof->sampling_vertical[0]==1) || (sof->sampling_horizontal[0]==1 && sof->sampling_vertical[0]==3)){
-        //case of h,v in {(4,1) ,(1,4),(3,1) ,(1,3 )}
+
         for (uint32_t l=0;l<MCU_vertical_number;l++){
         if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
         else{jmax=sof->sampling_vertical[0]*8;}
@@ -131,8 +132,8 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                     }
             }    
         }
+    //case of h,v == 4,2
     else if(sof->sampling_horizontal[0]==4 && sof->sampling_vertical[0]==2){
-        //case of h,v == 4,2
         for (uint32_t l=0;l<MCU_vertical_number;l++){
         if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
         else{jmax=sof->sampling_vertical[0]*8;}
@@ -160,8 +161,8 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                     }
             }    
         }
+    //case of h,v== 2,4
     else if(sof->sampling_horizontal[0]==2 && sof->sampling_vertical[0]==4){
-        //case of h,v== 2,4
         for (uint32_t l=0;l<MCU_vertical_number;l++){
         if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
         else{jmax=sof->sampling_vertical[0]*8;}
@@ -191,8 +192,9 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                     }
             }    
         }
+    //case of h,v == 3,2
     else if((sof->sampling_horizontal[0]==3 && sof->sampling_vertical[0]==2) ){
-        //case of h,v == 3,2
+
         for (uint32_t l=0;l<MCU_vertical_number;l++){
         if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
         else{jmax=sof->sampling_vertical[0]*8;}
@@ -218,8 +220,9 @@ void rainbow(uint8_t*** MCUs_RGB,struct SOF* sof,char* jpeg_name){
                     }
             }  
     }
+    //case of h,v== 2,3
     else if((sof->sampling_horizontal[0]==2 && sof->sampling_vertical[0]==3) ){
-        //case of h,v== 2,3
+
         for (uint32_t l=0;l<MCU_vertical_number;l++){
         if (l==MCU_vertical_number-1){jmax=(sof->height)%(sof->sampling_vertical[0]*8);}
         else{jmax=sof->sampling_vertical[0]*8;}
